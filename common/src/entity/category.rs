@@ -7,10 +7,10 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "category")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: u32,
     #[sea_orm(unique)]
     pub name: String,
-    pub parent_id: i32,
+    pub parent_id: Option<u32>,
     pub created_at: DateTimeLocal,
     pub updated_at: DateTimeLocal,
 }

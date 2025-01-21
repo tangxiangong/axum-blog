@@ -8,12 +8,10 @@ use serde::{Deserialize, Serialize};
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
     pub title: String,
-    pub subtitle: String,
-    pub description: String,
-    #[sea_orm(column_type = "Binary(255)")]
-    pub logo: Vec<u8>,
-    #[sea_orm(column_type = "Binary(255)")]
-    pub favicon: Vec<u8>,
+    pub subtitle: Option<String>,
+    pub description: Option<String>,
+    pub logo: Option<String>,
+    pub favicon: Option<String>,
     pub created_at: DateTimeLocal,
     pub updated_at: DateTimeLocal,
 }

@@ -10,12 +10,12 @@ pub struct Model {
     pub name: String,
     #[sea_orm(column_type = "Binary(255)")]
     pub password: Vec<u8>,
-    pub nickname: String,
-    pub email: String,
-    pub github: String,
-    pub wechat: String,
-    pub qq: String,
-    pub avatar: String,
+    pub nickname: Option<String>,
+    pub email: Option<String>,
+    pub github: Option<String>,
+    pub wechat: Option<String>,
+    pub qq: Option<String>,
+    pub avatar: Option<String>,
     pub created_at: DateTimeLocal,
     pub updated_at: DateTimeLocal,
 }

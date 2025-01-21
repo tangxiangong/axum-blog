@@ -7,9 +7,9 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "article")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
+    pub id: u32,
     pub title: String,
-    pub summary: String,
+    pub summary: Option<String>,
     #[sea_orm(column_type = "Text")]
     pub content: String,
     pub views: u32,

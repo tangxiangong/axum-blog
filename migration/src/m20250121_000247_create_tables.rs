@@ -118,22 +118,21 @@ impl MigrationTrait for Migration {
                     .col(
                         string(Website::Title)
                             .string_len(32)
-                            .default("My Blog")
                             .comment("网站标题")
                             .primary_key(),
                     )
                     .col(
-                        string(Website::Subtitle)
+                        string_null(Website::Subtitle)
                             .string_len(64)
                             .comment("网站副标题"),
                     )
                     .col(
-                        string(Website::Description)
+                        string_null(Website::Description)
                             .string_len(64)
                             .comment("网站描述"),
                     )
-                    .col(blob(Website::Logo).comment("网站 Logo"))
-                    .col(blob(Website::Favicon).comment("网站 Favicon"))
+                    .col(string_null(Website::Logo).comment("网站 Logo"))
+                    .col(string_null(Website::Favicon).comment("网站 Favicon"))
                     .col(
                         timestamp(Website::CreatedAt)
                             .default(Expr::current_timestamp())
@@ -157,17 +156,16 @@ impl MigrationTrait for Migration {
                     .col(
                         string(Admin::Name)
                             .string_len(16)
-                            .default("admin")
                             .comment("管理员名称")
                             .primary_key(),
                     )
                     .col(blob(Admin::Password).comment("密码"))
-                    .col(string(Admin::Nickname).string_len(16).comment("昵称"))
-                    .col(string(Admin::Email).string_len(128).comment("邮箱"))
-                    .col(string(Admin::Github).comment("Github"))
-                    .col(string(Admin::Wechat).comment("微信"))
-                    .col(string(Admin::QQ).comment("QQ"))
-                    .col(string(Admin::Avatar).comment("头像"))
+                    .col(string_null(Admin::Nickname).string_len(16).comment("昵称"))
+                    .col(string_null(Admin::Email).string_len(128).comment("邮箱"))
+                    .col(string_null(Admin::Github).comment("Github"))
+                    .col(string_null(Admin::Wechat).comment("微信"))
+                    .col(string_null(Admin::QQ).comment("QQ"))
+                    .col(string_null(Admin::Avatar).comment("头像"))
                     .col(
                         timestamp(Admin::CreatedAt)
                             .default(Expr::current_timestamp())
@@ -188,7 +186,7 @@ impl MigrationTrait for Migration {
                     .table(Category::Table)
                     .comment("分类表")
                     .if_not_exists()
-                    .col(pk_auto(Category::Id).comment("分类ID"))
+                    .col(pk_auto(Category::Id).unsigned().comment("分类ID"))
                     .col(
                         string(Category::Name)
                             .string_len(32)
@@ -196,7 +194,12 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .comment("分类名称"),
                     )
-                    .col(integer(Category::ParentId).comment("父分类"))
+                    .col(
+                        integer(Category::ParentId)
+                            .unsigned()
+                            .null()
+                            .comment("父分类"),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-category-parent")
@@ -224,7 +227,7 @@ impl MigrationTrait for Migration {
                     .table(Tag::Table)
                     .comment("标签表")
                     .if_not_exists()
-                    .col(pk_auto(Tag::Id))
+                    .col(pk_auto(Tag::Id).unsigned().comment("标签ID"))
                     .col(
                         string(Tag::Name)
                             .string_len(32)
@@ -252,14 +255,14 @@ impl MigrationTrait for Migration {
                     .table(Article::Table)
                     .comment("文章表")
                     .if_not_exists()
-                    .col(pk_auto(Article::Id).comment("文章ID"))
+                    .col(pk_auto(Article::Id).unsigned().comment("文章ID"))
                     .col(
                         string(Article::Title)
                             .string_len(128)
                             .not_null()
                             .comment("文章标题"),
                     )
-                    .col(string(Article::Summary).comment("文章摘要"))
+                    .col(string_null(Article::Summary).comment("文章摘要"))
                     .col(text(Article::Content).not_null().comment("文章内容"))
                     .col(
                         integer(Article::Views)
@@ -288,9 +291,10 @@ impl MigrationTrait for Migration {
                     .table(Comment::Table)
                     .comment("评论表")
                     .if_not_exists()
-                    .col(pk_auto(Comment::Id).comment("评论ID"))
+                    .col(pk_auto(Comment::Id).unsigned().comment("评论ID"))
                     .col(
                         integer(Comment::Article)
+                            .unsigned()
                             .not_null()
                             .comment("评论所在文章ID"),
                     )
@@ -308,8 +312,8 @@ impl MigrationTrait for Migration {
                             .not_null()
                             .comment("评论者名称"),
                     )
-                    .col(string(Comment::Email))
-                    .col(integer(Comment::ParentId).comment("父评论ID"))
+                    .col(string_null(Comment::Email))
+                    .col(integer(Comment::ParentId).unsigned().comment("父评论ID"))
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-comment-parent")
@@ -332,6 +336,7 @@ impl MigrationTrait for Migration {
                     .col(
                         integer(ArticleCategory::ArticleId)
                             .not_null()
+                            .unsigned()
                             .comment("对应文章ID"),
                     )
                     .foreign_key(
@@ -344,6 +349,7 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         integer(ArticleCategory::CategoryId)
+                            .unsigned()
                             .not_null()
                             .comment("对应分类ID"),
                     )
@@ -372,6 +378,7 @@ impl MigrationTrait for Migration {
                     .if_not_exists()
                     .col(
                         integer(ArticleTag::ArticleId)
+                            .unsigned()
                             .not_null()
                             .comment("对应文章ID"),
                     )

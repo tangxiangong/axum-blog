@@ -7,11 +7,11 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "comment")]
 pub struct Model {
     #[sea_orm(primary_key)]
-    pub id: i32,
-    pub article: i32,
+    pub id: u32,
+    pub article: u32,
     pub name: String,
-    pub email: String,
-    pub parent_id: i32,
+    pub email: Option<String>,
+    pub parent_id: u32,
     pub created_at: DateTimeLocal,
 }
 
