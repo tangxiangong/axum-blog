@@ -3,10 +3,12 @@ use serde::Deserialize;
 use std::time::Duration;
 use tokio::net::TcpListener;
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct Setting {
     pub app_port: u16,
     pub db: DBSetting,
+    #[serde(rename = "site")]
+    pub site_init: SiteInit,
 }
 
 impl Default for Setting {
@@ -14,11 +16,12 @@ impl Default for Setting {
         Setting {
             app_port: 3000,
             db: DBSetting::default(),
+            site_init: SiteInit::default(),
         }
     }
 }
 
-#[derive(Deserialize)]
+#[derive(Deserialize, Clone)]
 pub struct DBSetting {
     #[serde(rename = "type")]
     pub db_type: String,
@@ -58,7 +61,7 @@ fn load() -> Setting {
     }
 }
 
-pub async fn get() -> (DbConn, TcpListener) {
+pub async fn get() -> (DbConn, TcpListener, SiteInit) {
     let setting = load();
 
     let db_url = format!(
@@ -84,5 +87,34 @@ pub async fn get() -> (DbConn, TcpListener) {
         .await
         .unwrap_or_else(|_| panic!("Failed to bind to port {}", setting.app_port));
 
-    (db_conn, listner)
+    (db_conn, listner, setting.site_init)
+}
+
+#[derive(Deserialize, Clone)]
+pub struct SiteInit {
+    pub title: String,
+    pub subtitle: String,
+    pub description: String,
+    #[serde(rename = "admin")]
+    pub admin_init: AdminInit,
+}
+
+impl Default for SiteInit {
+    fn default() -> Self {
+        SiteInit {
+            title: "Blog with Axum".to_string(),
+            subtitle: "".to_string(),
+            description: "".to_string(),
+            admin_init: AdminInit {
+                name: "admin".to_string(),
+                password: "password".to_string(),
+            },
+        }
+    }
+}
+
+#[derive(Deserialize, Clone)]
+pub struct AdminInit {
+    pub name: String,
+    pub password: String,
 }

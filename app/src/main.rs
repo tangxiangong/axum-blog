@@ -1,9 +1,12 @@
+use database::init;
 use tracing::info;
 
 #[tokio::main]
 async fn main() {
     dotenvy::dotenv().ok();
-    let (db_conn, listener) = setting::get().await;
+    let (db_conn, listener, site_init) = setting::get().await;
+
+    init(site_init, &db_conn).await.unwrap();
 
     tracing_subscriber::fmt::init();
 
