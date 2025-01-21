@@ -1,0 +1,8 @@
+app_port: 
+db:
+  type: mysql
+  host: 
+  port: 
+  db_name: 
+  username: 
+  password: 
