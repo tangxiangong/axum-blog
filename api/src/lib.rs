@@ -1,7 +1,10 @@
 use axum::http::Method;
-use axum::{routing::get, Router};
+use axum::{
+    routing::{get, post},
+    Router,
+};
 use sea_orm::DbConn;
-use service::middleware::timing;
+use service::{handler::signin, middleware::timing};
 use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::{
@@ -15,6 +18,7 @@ pub type StateRouter = Router<DbConn>;
 pub fn compose() -> StateRouter {
     Router::new()
         .route("/api", get(|| async { "Hello, World!" }))
+        .route("/signin", post(signin))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())
