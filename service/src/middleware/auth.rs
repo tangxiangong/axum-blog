@@ -1,9 +1,7 @@
 use axum::{extract::Request, middleware::Next, response::Response};
-use common::{model::Claims, AppResult};
+use common::model::Claims;
 
 /// JWT 认证中间件
-pub async fn auth(claims: Claims, mut req: Request, next: Next) -> AppResult<Response> {
-    let username = claims.username.clone();
-    req.extensions_mut().insert(username);
-    Ok(next.run(req).await)
+pub async fn auth(_claims: Claims, req: Request, next: Next) -> Response {
+    next.run(req).await
 }
