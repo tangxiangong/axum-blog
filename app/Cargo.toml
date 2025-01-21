@@ -1,8 +1,17 @@
 [package]
-name = "app"
+name = "webserver"
+default-run = "webserver"
 authors.workspace = true
 edition.workspace = true
 version.workspace = true
 publish.workspace = true
 
 [dependencies]
+api = { path = "../api" }
+axum = { workspace = true }
+dotenvy = { workspace = true }
+tokio = { workspace = true }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+service = { path = "../service" }
+setting = { path = "../setting" }
