@@ -3,5 +3,6 @@ pub use response::*;
 mod error;
 mod macros;
 pub use error::*;
+pub mod entity;
 pub mod model;
 pub mod utils;
