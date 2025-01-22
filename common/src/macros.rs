@@ -17,7 +17,7 @@ macro_rules! impl_into_internal_error {
         $(
             impl From<$error> for AppError {
             fn from(e: $error) -> Self {
-                Self::new(StatusCode::INTERNAL_SERVER_ERROR, e.to_string())
+                Self::internal(e.to_string())
                 }
             }
         )+
@@ -30,7 +30,7 @@ macro_rules! impl_into_bad_request_error {
         $(
             impl From<$error> for AppError {
             fn from(e: $error) -> Self {
-                Self::new(StatusCode::BAD_REQUEST, e.to_string())
+                Self::bad_request(e.to_string())
                 }
             }
         )+

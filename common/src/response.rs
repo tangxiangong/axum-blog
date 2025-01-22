@@ -33,19 +33,6 @@ impl<T, M> AppResponse<T, M> {
         }
     }
 
-    pub fn ok() -> Self {
-        Self {
-            status_code: StatusCode::OK,
-            status: StatusCode::OK
-                .canonical_reason()
-                .unwrap_or("Unknown")
-                .to_string(),
-            message: None,
-            data: None,
-            meta: None,
-        }
-    }
-
     pub fn created() -> Self {
         Self {
             status_code: StatusCode::CREATED,
@@ -69,6 +56,21 @@ impl<T, M> AppResponse<T, M> {
                 .to_string(),
             message: None,
             data: Some(data),
+            meta: None,
+        }
+    }
+}
+
+impl AppResponse {
+    pub fn ok() -> Self {
+        Self {
+            status_code: StatusCode::OK,
+            status: StatusCode::OK
+                .canonical_reason()
+                .unwrap_or("Unknown")
+                .to_string(),
+            message: None,
+            data: None,
             meta: None,
         }
     }

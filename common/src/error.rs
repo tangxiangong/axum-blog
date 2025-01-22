@@ -1,6 +1,6 @@
 use crate::{impl_from_axum_error, impl_into_internal_error, AppResponse};
 use axum::{
-    http::StatusCode,
+    http::{HeaderValue, StatusCode},
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
@@ -40,6 +40,11 @@ impl AppError {
         Self::new(StatusCode::UNAUTHORIZED, message)
     }
 
+    pub fn bad_request(message: impl Into<String>) -> Self {
+        let message = message.into();
+        Self::new(StatusCode::BAD_REQUEST, message)
+    }
+
     pub fn code(&self) -> StatusCode {
         self.status_code
     }
@@ -66,7 +71,15 @@ impl From<AppError> for AppResponse {
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
-        AppResponse::from(self).into_response()
+        let code = self.status_code;
+        let mut res = AppResponse::from(self).into_response();
+        if let StatusCode::UNAUTHORIZED = code {
+            let bearer = HeaderValue::from_str("Bearer").unwrap();
+            res.headers_mut().insert("WWW-Authenticate", bearer);
+            res
+        } else {
+            res
+        }
     }
 }
 
