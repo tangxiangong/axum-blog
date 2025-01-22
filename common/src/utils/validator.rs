@@ -1,5 +1,4 @@
 use crate::{impl_into_bad_request_error, AppError, AppResult};
-use axum::http::StatusCode;
 use regex::Regex;
 use std::sync::LazyLock;
 use thiserror::Error;

@@ -30,19 +30,19 @@ where
 }
 
 #[derive(Debug, Deserialize)]
-pub struct LoginQuery {
+pub struct RememberMe {
     pub remember_me: bool,
 }
 
-impl<S> FromRequestParts<S> for LoginQuery
+impl<S> FromRequestParts<S> for RememberMe
 where
     S: Sync + Send,
 {
     type Rejection = AppError;
     async fn from_request_parts(_parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
-        match Query::<LoginQuery>::from_request_parts(_parts, _state).await {
+        match Query::<RememberMe>::from_request_parts(_parts, _state).await {
             Ok(query) => Ok(query.0),
-            Err(_) => Ok(LoginQuery { remember_me: false }),
+            Err(_) => Ok(RememberMe { remember_me: false }),
         }
     }
 }
