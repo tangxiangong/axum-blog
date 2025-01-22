@@ -20,8 +20,8 @@ version = "0.1.0"
 publish = false
 
 [workspace.dependencies]
-axum-extra = { version = "0.11", features = ["typed-header"] }
-axum = { version = "0.8.2", features = ["form", "macros"] }
+axum-extra = { version = "0", features = ["typed-header"] }
+axum = { version = "0.8", features = ["form", "macros"] }
 chrono = { version = "0.4.39", features = ["serde"] }
 config = { version = "0.15.6", features = ["yaml"] }
 dotenvy = "0.15.7"
@@ -40,6 +40,8 @@ thiserror = "2"
 tokio = { version = "1.43.0", features = ["full"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.2", features = ["trace", "cors", "timeout"] }
-tower-sessions = "0.14"
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"
+uuid = { version = "1.12", features = ["v4", "fast-rng"] }
+redis = { version = "0.28.1", features = ["tokio-comp", "tokio-rustls-comp"] }
+rustls = { version = "0.23", features = ["ring"] }

@@ -4,7 +4,7 @@ use axum::{
     Router,
 };
 use sea_orm::DbConn;
-use service::{handler::signin, middleware::timing};
+use service::{handler::signin, middleware::timing, middleware::auth};
 use std::time::Duration;
 use tower::ServiceBuilder;
 use tower_http::{
@@ -19,6 +19,7 @@ pub fn compose() -> StateRouter {
     Router::new()
         .route("/api", get(|| async { "Hello, World!" }))
         .route("/signin", post(signin))
+        .route("/protected", get(|| async {"hello"}).layer(axum::middleware::from_fn(auth)))
         .layer(
             ServiceBuilder::new()
                 .layer(TraceLayer::new_for_http())

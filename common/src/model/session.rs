@@ -1,62 +1,110 @@
-use std::sync::Arc;
-use tower_sessions::{session::Id, Expiry, MemoryStore, Session as SessionCore, SessionStore};
-
 use crate::{AppError, AppResult};
+use axum::{extract::OptionalFromRequestParts, http::request::Parts, RequestPartsExt};
+use axum_extra::{headers::Cookie, TypedHeader};
+use chrono::{DateTime, Duration, Local};
+use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde_json::Value;
+use std::collections::HashMap;
+use uuid::Uuid;
 
-#[derive(Debug)]
-pub struct Session(SessionCore);
+#[derive(Debug, Copy, Clone, Serialize, Deserialize, Eq, PartialEq)]
+pub enum Expiry {
+    OnSessionEnd,
+    OnInactivity(Duration),
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Session {
+    id: String,
+    data: HashMap<String, Value>,
+    expiry: Expiry,
+    last_accessed: DateTime<Local>,
+}
 
 impl Default for Session {
     fn default() -> Self {
-        let id = Id::default();
-        let store = Arc::new(MemoryStore::default());
+        let id = Uuid::new_v4().to_string();
+        let data = HashMap::new();
         let expiry = Expiry::OnSessionEnd;
-        let session = SessionCore::new(Some(id), store, Some(expiry));
-        Self(session)
+        let last_accessed = Local::now();
+        Self {
+            id,
+            data,
+            expiry,
+            last_accessed,
+        }
     }
 }
 
 impl Session {
-    const SESSION_KEY: &'static str = "username";
-    pub fn new(store: Arc<impl SessionStore>, expiry: Expiry) -> Self {
-        let id = Id::default();
-        let session = SessionCore::new(Some(id), store, Some(expiry));
-        Self(session)
+    pub fn new(expiry: Expiry) -> Self {
+        Self {
+            expiry,
+            ..Default::default()
+        }
     }
 
-    pub async fn insert(&self, uername: impl Into<String>) -> AppResult {
-        let username: String = uername.into();
-        self.0
-            .insert(Self::SESSION_KEY, username)
-            .await
-            .map_err(|e| AppError::internal(e.to_string()))?;
+    pub fn id(&self) -> &str {
+        &self.id
+    }
+
+    pub fn insert(&mut self, key: &str, value: impl Serialize) -> AppResult {
+        let key = key.into();
+        let value = serde_json::to_value(value)?;
+        self.data.insert(key, value);
         Ok(())
     }
 
-    pub async fn get(&self) -> AppResult<Option<String>> {
-        let username = self
-            .0
-            .get::<String>(Self::SESSION_KEY)
-            .await
-            .map_err(|e| AppError::internal(e.to_string()))?;
-        Ok(username)
+    pub fn get<T: DeserializeOwned>(&self, key: &str) -> AppResult<Option<T>> {
+        let value = self.data.get(key);
+        if let Some(v) = value {
+            Ok(serde_json::from_value(v.clone())?)
+        } else {
+            Ok(None)
+        }
     }
 
-    pub fn id(&self) -> Option<Id> {
-        self.0.id()
+    pub fn update(&mut self) {
+        self.last_accessed = Local::now();
+    }
+
+    pub fn is_expired(&self) -> bool {
+        if let Expiry::OnInactivity(duration) = self.expiry {
+            Local::now() - self.last_accessed > duration
+        } else {
+            false
+        }
+    }
+
+    pub fn save(&self) {
+        todo!()
+    }
+
+    pub fn load(_id: &str) -> AppResult<Option<Self>> {
+        todo!()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[tokio::test]
-    async fn test_session() {
-        let session = Session::default();
-        session.insert("username").await.unwrap();
-        println!("session id: {}", session.id().unwrap());
-        let username = session.get().await.unwrap().unwrap();
-        assert_eq!(username, "username");
+impl<S> OptionalFromRequestParts<S> for Session
+where
+    S: Send + Sync,
+{
+    type Rejection = AppError;
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> AppResult<Option<Self>> {
+        if let Ok(Some(TypedHeader(cookies))) = parts.extract::<Option<TypedHeader<Cookie>>>().await
+        {
+            match cookies.get("JSESSIONID") {
+                Some(id) => {
+                    if let Ok(Some(session)) = Self::load(id) {
+                        Ok(Some(session))
+                    } else {
+                        Ok(None)
+                    }
+                }
+                None => Ok(None),
+            }
+        } else {
+            Ok(None)
+        }
     }
 }

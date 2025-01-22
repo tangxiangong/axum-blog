@@ -61,6 +61,7 @@ impl_into_internal_error!(
     std::io::Error,
     sea_orm::error::DbErr,
     sea_orm::error::SqlErr,
+    serde_json::Error,
 );
 
 impl From<AppError> for AppResponse {
