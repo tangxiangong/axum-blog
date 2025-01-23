@@ -8,6 +8,7 @@ use common::{
     AppError, AppResponse, AppResult,
 };
 use database::admin::get_password;
+use redis::AsyncCommands;
 
 /// 登录接口 API: `/login`
 /// 默认不会返回 JWT, 除非用户选择了`记住我`，对应于 `/login?remember_me=true`
@@ -46,16 +47,32 @@ pub async fn signin(
 
 /// 登出
 /// 1. 删除 Redis 中的 Session
-/// 2. 将 JWT 加入黑名单
+/// 2. 将 JWT 加入黑名单(Redis)
 #[allow(unused_variables)]
 pub async fn signout(
     MySQLConn(db_conn): MySQLConn,
-    RedisConn(redis_conn): RedisConn,
+    RedisConn(mut redis_conn): RedisConn,
     claims: Option<Claims>,
     session: Option<Session>,
     admin: Login,
 ) -> AppResult<()> {
-    todo!()
+    if let Some(session) = session {
+        let session_id = session.id().to_string();
+        if redis_conn.exists(&session_id).await? {
+            let _: () = redis_conn.del(session_id).await?;
+        }
+    }
+
+    if let Some(claims) = claims {
+        let token = claims.encode()?;
+        let secs = claims.exp_secs();
+        if !redis_conn.exists(&token).await? {
+            let _: () = redis_conn.set(&token, "unvalid").await?;
+            let _: () = redis_conn.expire(&token, secs).await?;
+        }
+    }
+
+    Ok(())
 }
 
 async fn create_session(value: &str, conn: RedisPoolConn) -> AppResult<String> {
