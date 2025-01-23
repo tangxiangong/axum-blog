@@ -12,3 +12,4 @@ service = { path = "../service" }
 tower-http = { workspace = true }
 tower = { workspace = true }
 sea-orm = { workspace = true }
+setting = { path = "../setting" }
