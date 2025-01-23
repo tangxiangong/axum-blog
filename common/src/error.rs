@@ -62,6 +62,7 @@ impl_into_internal_error!(
     sea_orm::error::DbErr,
     sea_orm::error::SqlErr,
     serde_json::Error,
+    redis::RedisError
 );
 
 impl From<AppError> for AppResponse {
