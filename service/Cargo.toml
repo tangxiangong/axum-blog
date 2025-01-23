@@ -7,6 +7,7 @@ publish.workspace = true
 
 [dependencies]
 axum = { workspace = true }
+axum-extra = { workspace = true }
 common = { path = "../common" }
 sea-orm = { workspace = true }
 tower = { workspace = true }
