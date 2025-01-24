@@ -11,7 +11,7 @@
  Target Server Version : 80403 (8.4.3)
  File Encoding         : 65001
 
- Date: 21/01/2025 23:16:51
+ Date: 24/01/2025 14:48:14
 */
 
 SET NAMES utf8mb4;
@@ -22,6 +22,7 @@ SET FOREIGN_KEY_CHECKS = 0;
 -- ----------------------------
 DROP TABLE IF EXISTS `admin`;
 CREATE TABLE `admin` (
+  `id` varchar(128) NOT NULL,
   `name` varchar(16) NOT NULL COMMENT '管理员名称',
   `password` blob NOT NULL COMMENT '密码',
   `nickname` varchar(16) DEFAULT NULL COMMENT '昵称',
@@ -32,7 +33,8 @@ CREATE TABLE `admin` (
   `avatar` varchar(255) DEFAULT NULL COMMENT '头像',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  PRIMARY KEY (`name`)
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='管理员表';
 
 -- ----------------------------
@@ -72,9 +74,9 @@ CREATE TABLE `article_tag` (
   `article_id` int unsigned NOT NULL COMMENT '对应文章ID',
   `tag_id` int unsigned NOT NULL COMMENT '对应标签ID',
   PRIMARY KEY (`article_id`,`tag_id`),
-  KEY `fk-article-tag-tag` (`tag_id`),
-  CONSTRAINT `fk-article-tag-tag` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
-  CONSTRAINT `fk-article_tag-article` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `fk-article_tag-tag` (`tag_id`),
+  CONSTRAINT `fk-article_tag-article` FOREIGN KEY (`article_id`) REFERENCES `article` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk-article_tag-tag` FOREIGN KEY (`tag_id`) REFERENCES `tag` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='文章标签关联表';
 
 -- ----------------------------
@@ -112,6 +114,23 @@ CREATE TABLE `comment` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='评论表';
 
 -- ----------------------------
+-- Table structure for jwt
+-- ----------------------------
+DROP TABLE IF EXISTS `jwt`;
+CREATE TABLE `jwt` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'ID',
+  `user_uuid` varchar(128) NOT NULL COMMENT '用户UUID',
+  `token` varchar(512) NOT NULL COMMENT 'token',
+  `expire_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '过期时间',
+  `expire_duration` bigint NOT NULL COMMENT '过期时长, 单位秒',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `fk-jwt-user` (`user_uuid`),
+  CONSTRAINT `fk-jwt-user` FOREIGN KEY (`user_uuid`) REFERENCES `admin` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='存放JWT, 需要定时清理';
+
+-- ----------------------------
 -- Table structure for seaql_migrations
 -- ----------------------------
 DROP TABLE IF EXISTS `seaql_migrations`;
@@ -126,7 +145,7 @@ CREATE TABLE `seaql_migrations` (
 -- ----------------------------
 DROP TABLE IF EXISTS `tag`;
 CREATE TABLE `tag` (
-  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `id` int unsigned NOT NULL AUTO_INCREMENT COMMENT '标签ID',
   `name` varchar(32) NOT NULL COMMENT '标签名称',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
