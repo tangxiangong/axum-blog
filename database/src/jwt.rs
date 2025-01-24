@@ -24,11 +24,12 @@ pub async fn add(uid: &str, db_conn: &DbConn) -> AppResult<String> {
 }
 
 pub async fn find_by_uid(uid: &str, db_conn: &DbConn) -> AppResult<Vec<(String, i64)>> {
+    let current = Local::now().timestamp();
     Ok(JwtEntity::find()
         .select_only()
         .columns([jwt::Column::Token, jwt::Column::ExpireAt])
         .filter(jwt::Column::UserUuid.eq(uid))
-        .filter(jwt::Column::ExpireAt.gt(Local::now().timestamp()))
+        .filter(jwt::Column::ExpireAt.gt(current))
         .into_tuple::<(String, i64)>()
         .all(db_conn)
         .await?)
