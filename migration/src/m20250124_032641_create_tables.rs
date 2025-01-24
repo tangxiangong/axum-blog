@@ -17,8 +17,9 @@ enum Website {
 }
 
 #[derive(DeriveIden)]
-enum Admin {
+pub enum Admin {
     Table,
+    Id,
     Name,
     Nickname,
     Password,
@@ -27,6 +28,23 @@ enum Admin {
     Github,
     Wechat,
     QQ,
+    #[sea_orm(iden = "created_at")]
+    CreatedAt,
+    #[sea_orm(iden = "updated_at")]
+    UpdatedAt,
+}
+
+#[derive(DeriveIden)]
+enum Jwt {
+    Table,
+    Id,
+    #[sea_orm(iden = "user_uuid")]
+    UserUuid,
+    Token,
+    #[sea_orm(iden = "expire_duration")]
+    ExpireDuration,
+    #[sea_orm(iden = "expire_at")]
+    ExpireAt,
     #[sea_orm(iden = "created_at")]
     CreatedAt,
     #[sea_orm(iden = "updated_at")]
@@ -153,11 +171,12 @@ impl MigrationTrait for Migration {
                     .table(Admin::Table)
                     .comment("管理员表")
                     .if_not_exists()
+                    .col(string(Admin::Id).string_len(128).primary_key())
                     .col(
                         string(Admin::Name)
                             .string_len(16)
                             .comment("管理员名称")
-                            .primary_key(),
+                            .unique_key(),
                     )
                     .col(blob(Admin::Password).comment("密码"))
                     .col(string_null(Admin::Nickname).string_len(16).comment("昵称"))
@@ -173,6 +192,43 @@ impl MigrationTrait for Migration {
                     )
                     .col(
                         timestamp(Admin::UpdatedAt)
+                            .default(Expr::current_timestamp())
+                            .comment("更新时间"),
+                    )
+                    .to_owned(),
+            )
+            .await?;
+
+        manager
+            .create_table(
+                Table::create()
+                    .table(Jwt::Table)
+                    .comment("存放JWT, 需要定时清理")
+                    .if_not_exists()
+                    .col(pk_auto(Jwt::Id).unsigned().comment("ID"))
+                    .col(string(Jwt::UserUuid).string_len(128).comment("用户UUID"))
+                    .foreign_key(
+                        ForeignKey::create()
+                            .name("fk-jwt-user")
+                            .from(Jwt::Table, Jwt::UserUuid)
+                            .to(Admin::Table, Admin::Id)
+                            .on_delete(ForeignKeyAction::Cascade)
+                            .on_update(ForeignKeyAction::Cascade),
+                    )
+                    .col(string(Jwt::Token).string_len(512).comment("token"))
+                    .col(
+                        timestamp(Jwt::ExpireAt)
+                            .default(Expr::current_timestamp())
+                            .comment("过期时间"),
+                    )
+                    .col(big_integer(Jwt::ExpireDuration).comment("过期时长, 单位秒"))
+                    .col(
+                        timestamp(Jwt::CreatedAt)
+                            .default(Expr::current_timestamp())
+                            .comment("创建时间"),
+                    )
+                    .col(
+                        timestamp(Jwt::UpdatedAt)
                             .default(Expr::current_timestamp())
                             .comment("更新时间"),
                     )
@@ -390,7 +446,12 @@ impl MigrationTrait for Migration {
                             .on_delete(ForeignKeyAction::Cascade)
                             .on_update(ForeignKeyAction::Cascade),
                     )
-                    .col(integer(ArticleTag::TagId).not_null().comment("对应标签ID"))
+                    .col(
+                        integer(ArticleTag::TagId)
+                            .unsigned()
+                            .not_null()
+                            .comment("对应标签ID"),
+                    )
                     .foreign_key(
                         ForeignKey::create()
                             .name("fk-article_tag-tag")
@@ -430,6 +491,14 @@ impl MigrationTrait for Migration {
 
         manager
             .drop_table(Table::drop().table(Category::Table).to_owned())
+            .await?;
+
+        manager
+            .drop_table(Table::drop().table(Tag::Table).to_owned())
+            .await?;
+
+        manager
+            .drop_table(Table::drop().table(Jwt::Table).to_owned())
             .await?;
 
         manager

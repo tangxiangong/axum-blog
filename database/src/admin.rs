@@ -20,3 +20,18 @@ pub async fn get_password(name: &str, db_conn: &DbConn) -> AppResult<String> {
         Err(AppError::unauth("用户名错误"))
     }
 }
+
+pub async fn get_uid(username: &str, db_conn: &DbConn) -> AppResult<String> {
+    let uid = AdminEntity::find()
+        .select_only()
+        .column(admin::Column::Id)
+        .filter(admin::Column::Name.eq(username))
+        .into_tuple()
+        .one(db_conn)
+        .await?;
+    if let Some(uid) = uid {
+        Ok(uid)
+    } else {
+        Err(AppError::unauth("用户名错误"))
+    }
+}

@@ -9,5 +9,6 @@ pub mod article_category;
 pub mod article_tag;
 pub mod category;
 pub mod comment;
+pub mod jwt;
 pub mod tag;
 pub mod website;

@@ -7,6 +7,8 @@ use serde::{Deserialize, Serialize};
 #[sea_orm(table_name = "admin")]
 pub struct Model {
     #[sea_orm(primary_key, auto_increment = false)]
+    pub id: String,
+    #[sea_orm(unique)]
     pub name: String,
     #[sea_orm(column_type = "Binary(255)")]
     pub password: Vec<u8>,
@@ -21,6 +23,15 @@ pub struct Model {
 }
 
 #[derive(Copy, Clone, Debug, EnumIter, DeriveRelation)]
-pub enum Relation {}
+pub enum Relation {
+    #[sea_orm(has_many = "super::jwt::Entity")]
+    Jwt,
+}
+
+impl Related<super::jwt::Entity> for Entity {
+    fn to() -> RelationDef {
+        Relation::Jwt.def()
+    }
+}
 
 impl ActiveModelBehavior for ActiveModel {}

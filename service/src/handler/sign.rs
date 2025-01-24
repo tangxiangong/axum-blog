@@ -10,7 +10,10 @@ use common::{
     AppResponse,
     AppResult,
 };
-use database::admin::get_password;
+use database::{
+    admin::{get_password, get_uid},
+    jwt::add,
+};
 use redis::AsyncCommands;
 
 /// 登录接口 API: `/login`
@@ -25,21 +28,20 @@ pub async fn signin(
     if admin.password.ne(&exact_password) {
         return Err(AppError::unauth("密码错误"));
     }
+    let uid = get_uid(&admin.username, &db_conn).await?;
     let mut res = AppResponse::ok().into_response();
     // let mut token: Option<String> = None;
     if payload.remember_me {
-        let claims = Claims::new(&admin.username);
-        let enc_str = claims.encode()?;
+        let token = add(&uid, &db_conn).await?;
         // token = Some(enc_str.clone());
         // let bearer = format!("Bearer {}", auth.token);
         let token_value =
-            HeaderValue::try_from(&enc_str).map_err(|e| AppError::internal(e.to_string()))?;
+            HeaderValue::try_from(&token).map_err(|e| AppError::internal(e.to_string()))?;
         res.headers_mut().insert("Bearer", token_value);
     }
-    // let payload = token.map(|v| get_jwt_payload(&v));
-    // if let Ok(id) = create_session(&admin.username, payload, redis_conn).await {
-    if let Ok(id) = create_session(&admin.username, redis_conn).await {
-        let cookie = Cookie::build(("JSESSIONID", &id))
+
+    if let Ok(session_id) = create_session(&uid, redis_conn).await {
+        let cookie = Cookie::build(("JSESSIONID", &session_id))
             .http_only(true)
             .same_site(SameSite::Strict)
             .secure(true)
@@ -61,7 +63,7 @@ pub async fn signout(
     claims: Option<Claims>,
     session: Option<Session>,
     admin: Login,
-) -> AppResult<()> {
+) -> AppResult<&'static str> {
     if let Some(session) = session {
         let session_id = session.id().to_string();
         // if let Some(payload) = session.payload() {}
@@ -79,7 +81,7 @@ pub async fn signout(
         }
     }
 
-    Ok(())
+    Ok("登出成功")
 }
 
 async fn create_session(
@@ -89,7 +91,7 @@ async fn create_session(
 ) -> AppResult<String> {
     // let mut session = Session::with_payload(payload);
     let mut session = Session::default();
-    session.insert("username", value)?;
+    session.insert("uid", value)?;
     session.save(conn).await?;
     let id = session.id().to_string();
     Ok(id)

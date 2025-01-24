@@ -7,6 +7,7 @@ pub use super::article_category::Entity as ArticleCategoryEntity;
 pub use super::article_tag::Entity as ArticleTagEntity;
 pub use super::category::Entity as CategoryEntity;
 pub use super::comment::Entity as CommentEntity;
+pub use super::jwt::Entity as JwtEntity;
 pub use super::tag::Entity as TagEntity;
 pub use super::website::Entity as WebsiteEntity;
 
@@ -17,6 +18,7 @@ pub use super::article_category::Model as ArticleCategory;
 pub use super::article_tag::Model as ArticleTag;
 pub use super::category::Model as Category;
 pub use super::comment::Model as Comment;
+pub use super::jwt::Model as Jwt;
 pub use super::tag::Model as Tag;
 pub use super::website::Model as Website;
 
@@ -27,5 +29,6 @@ pub use super::article_category::ActiveModel as ActiveArticleCategory;
 pub use super::article_tag::ActiveModel as ActiveArticleTag;
 pub use super::category::ActiveModel as ActiveCategory;
 pub use super::comment::ActiveModel as ActiveComment;
+pub use super::jwt::ActiveModel as ActiveJwt;
 pub use super::tag::ActiveModel as ActiveTag;
 pub use super::website::ActiveModel as ActiveWebsite;

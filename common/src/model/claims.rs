@@ -43,7 +43,7 @@ where
 pub struct Claims {
     pub iat: usize,
     pub exp: usize,
-    pub username: String,
+    pub uid: String,
 }
 /// 对 `Claims` 实现 `OptionalFromRequestParts` trait
 /// 从请求头 Authorization: Bearer=token 中提取 JWT `token`，并解码为 `Claims`
@@ -72,11 +72,11 @@ impl Claims {
         self.exp as i64 - Local::now().timestamp()
     }
 
-    pub fn new(username: impl Into<String>) -> Self {
+    pub fn new(uid: impl Into<String>) -> Self {
         let iat = Local::now().timestamp() as usize;
         let exp = (Local::now() + Duration::days(15)).timestamp() as usize;
-        let username = username.into();
-        Self { iat, exp, username }
+        let uid = uid.into();
+        Self { iat, exp, uid }
     }
 
     pub fn encode(&self) -> AppResult<String> {
@@ -95,8 +95,8 @@ mod tests {
 
     #[test]
     fn test_jwt() {
-        let token = Claims::new("username").encode().unwrap();
+        let token = Claims::new("uuid").encode().unwrap();
         let claims = Claims::decode(&token).unwrap();
-        assert_eq!(claims.username, "username");
+        assert_eq!(claims.uid, "uuid");
     }
 }

@@ -9,7 +9,9 @@ use setting::SiteInit;
 pub async fn init(site: SiteInit, db_conn: &DbConn) -> AppResult {
     if AdminEntity::find().one(db_conn).await?.is_none() {
         let en_pwd = encrypt(&site.admin_init.password)?;
+        let id = uuid::Uuid::new_v4().to_string();
         ActiveAdmin {
+            id: Set(id),
             name: Set(site.admin_init.name),
             password: Set(en_pwd),
             ..Default::default()
