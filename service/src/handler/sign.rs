@@ -41,7 +41,7 @@ pub async fn signin(
     }
 
     if let Ok(session_id) = create_session(&uid, redis_conn).await {
-        let cookie = Cookie::build(("JSESSIONID", &session_id))
+        let cookie = Cookie::build(("SESSION_ID", &session_id))
             .http_only(true)
             .same_site(SameSite::Strict)
             .secure(true)

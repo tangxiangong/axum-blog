@@ -142,7 +142,7 @@ where
 
         if let Ok(Some(TypedHeader(cookies))) = parts.extract::<Option<TypedHeader<Cookie>>>().await
         {
-            match cookies.get("JSESSIONID") {
+            match cookies.get("SESSION_ID") {
                 Some(id) => {
                     if let Ok(Some(session)) = Self::load(id, conn).await {
                         Ok(Some(session))
