@@ -16,3 +16,4 @@ database = { path = "../database" }
 serde_json = { workspace = true }
 redis = { workspace = true }
 setting = { path = "../setting" }
+chrono = { workspace = true }
