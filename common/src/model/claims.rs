@@ -10,6 +10,18 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone)]
 pub struct Token(pub String);
 
+impl std::fmt::Display for Token {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
+    }
+}
+
+impl Token {
+    pub fn payload(&self) -> String {
+        get_jwt_payload(&self.0)
+    }
+}
+
 impl<S> OptionalFromRequestParts<S> for Token
 where
     S: Send + Sync,

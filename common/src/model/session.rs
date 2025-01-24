@@ -25,6 +25,7 @@ pub struct Session {
     id: String,
     data: HashMap<String, Value>,
     expiry: Expiry,
+    // jwt_payload: Option<String>,
     last_accessed: DateTime<Local>,
 }
 
@@ -34,10 +35,12 @@ impl Default for Session {
         let data = HashMap::new();
         let expiry = Expiry::OnSessionEnd;
         let last_accessed = Local::now();
+        // let jwt_payload = None;
         Self {
             id,
             data,
             expiry,
+            // jwt_payload,
             last_accessed,
         }
     }
@@ -52,6 +55,17 @@ impl Session {
             ..Default::default()
         }
     }
+
+    // pub fn with_payload(payload: Option<String>) -> Self {
+    //     Self {
+    //         jwt_payload: payload,
+    //         ..Default::default()
+    //     }
+    // }
+
+    // pub fn payload(&self) -> Option<String> {
+    //     self.jwt_payload.clone()
+    // }
 
     pub fn id(&self) -> &str {
         &self.id

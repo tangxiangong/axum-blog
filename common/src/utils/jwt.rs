@@ -41,3 +41,9 @@ pub fn decode_jwt(token: &str) -> AppResult<Claims> {
     .map_err(|e| AppError::unauth(e.to_string()))?;
     Ok(data.claims)
 }
+
+pub fn get_jwt_payload(token: &str) -> String {
+    let v = token.split('.').collect::<Vec<&str>>();
+    let payload = v.get(1).unwrap_or(&token);
+    payload.to_string()
+}
