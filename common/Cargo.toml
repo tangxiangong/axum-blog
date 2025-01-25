@@ -25,3 +25,4 @@ bb8-redis = { workspace = true }
 redis-macros = { workspace = true }
 rustls = { workspace = true }
 setting = { path = "../setting" }
+infer = { workspace = true }
