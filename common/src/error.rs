@@ -55,6 +55,8 @@ impl_from_axum_error!(
     axum::extract::rejection::JsonRejection,
     axum::extract::rejection::PathRejection,
     axum::extract::rejection::QueryRejection,
+    axum::extract::multipart::MultipartRejection,
+    axum::extract::multipart::MultipartError,
 );
 
 impl_into_internal_error!(
