@@ -4,11 +4,8 @@ use axum::{
 };
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use common::{
-    model::{Claims, Login, MySQLConn, RedisConn, RedisPoolConn, RememberMe, Session},
-    // utils::jwt::get_jwt_payload,
-    AppError,
-    AppResponse,
-    AppResult,
+    model::{Claims, Login, RememberMe, Session},
+    AppError, AppResponse, AppResult, MySQLConn, RedisConn, RedisPoolConn,
 };
 use database::{
     admin::{get_password, get_uid},
@@ -56,13 +53,10 @@ pub async fn signin(
 /// 登出
 /// 1. 删除 Redis 中的 Session
 /// 2. 将 JWT 加入黑名单(Redis)
-#[allow(unused_variables)]
 pub async fn signout(
-    MySQLConn(db_conn): MySQLConn,
     RedisConn(mut redis_conn): RedisConn,
     claims: Option<Claims>,
     session: Option<Session>,
-    admin: Login,
 ) -> AppResult<&'static str> {
     if let Some(session) = session {
         let session_id = session.id().to_string();
