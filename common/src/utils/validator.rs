@@ -70,6 +70,23 @@ pub fn is_valid_email(email: &str) -> AppResult<()> {
     Ok(())
 }
 
+pub fn is_valid_github(url: &str) -> AppResult<()> {
+    if !url.starts_with("https://github.com/") {
+        return Err(ValidationError::InvalidGithubUrl(
+            "GitHub 链接必须以 `https://github.com/` 开头".to_owned(),
+        )
+        .into());
+    }
+    Ok(())
+}
+
+pub fn is_valid_qq(qq: &str) -> AppResult<()> {
+    if !qq.chars().all(char::is_numeric) {
+        return Err(ValidationError::InvalidQQ("QQ 号必须为数字".to_owned()).into());
+    }
+    Ok(())
+}
+
 #[derive(Error, Debug)]
 pub enum ValidationError {
     #[error("用户名非法: {0}")]
@@ -80,6 +97,10 @@ pub enum ValidationError {
     InvalidEmail(String),
     #[error("密码非法: {0}")]
     InvalidPassword(String),
+    #[error("GitHub 链接非法: {0}")]
+    InvalidGithubUrl(String),
+    #[error("QQ 非法: {0}")]
+    InvalidQQ(String),
 }
 
 impl_into_bad_request_error!(ValidationError);
