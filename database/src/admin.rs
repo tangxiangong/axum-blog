@@ -1,9 +1,12 @@
 use common::{
-    entity::{admin, AdminEntity},
+    entity::{admin, ActiveAdmin, Admin, AdminEntity},
+    model::UpdateAdminInfo,
     utils::cryption::decrypt,
     AppError, AppResult,
 };
-use sea_orm::{prelude::*, DbConn, QuerySelect};
+use sea_orm::{prelude::*, DbConn, QuerySelect, Set};
+
+use crate::set_value;
 
 pub async fn get_password(name: &str, db_conn: &DbConn) -> AppResult<String> {
     let en_password = AdminEntity::find()
@@ -34,4 +37,38 @@ pub async fn get_uid(username: &str, db_conn: &DbConn) -> AppResult<String> {
     } else {
         Err(AppError::unauth("用户名错误"))
     }
+}
+
+pub async fn get_info(uid: &str, db_conn: &DbConn) -> AppResult<Admin> {
+    Ok(AdminEntity::find_by_id(uid).one(db_conn).await?.unwrap())
+}
+
+pub async fn update_info(uid: &str, info: UpdateAdminInfo, db_conn: &DbConn) -> AppResult<()> {
+    let mut admin: ActiveAdmin = AdminEntity::find_by_id(uid)
+        .one(db_conn)
+        .await?
+        .unwrap()
+        .into();
+    // 原代码替换为
+    set_value!(
+        admin,
+        (name, info.name, direct),
+        (nickname, info.nickname),
+        (email, info.email),
+        (github, info.github),
+        (wechat, info.wechat),
+        (qq, info.qq)
+    );
+    Ok(())
+}
+
+pub async fn update_avatar(uid: &str, path: &str, db_conn: &DbConn) -> AppResult<()> {
+    let mut admin: ActiveAdmin = AdminEntity::find_by_id(uid)
+        .one(db_conn)
+        .await?
+        .unwrap()
+        .into();
+    admin.avatar = Set(Some(path.to_owned()));
+    admin.save(db_conn).await?;
+    Ok(())
 }
