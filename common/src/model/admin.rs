@@ -1,13 +1,9 @@
+use crate::{utils::validator::*, AppError};
 use axum::{
     extract::{Form, FromRequest, FromRequestParts, Query, Request},
     http::request::Parts,
 };
 use serde::Deserialize;
-
-use crate::{
-    utils::validator::{is_valid_password, is_valid_username},
-    AppError,
-};
 
 #[derive(Debug, Deserialize)]
 pub struct Login {
@@ -44,5 +40,43 @@ where
             Ok(query) => Ok(query.0),
             Err(_) => Ok(RememberMe { remember_me: false }),
         }
+    }
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateAdminInfo {
+    pub name: Option<String>,
+    pub nickname: Option<String>,
+    pub email: Option<String>,
+    pub github: Option<String>,
+    pub wechat: Option<String>,
+    pub qq: Option<String>,
+}
+
+impl<S> FromRequest<S> for UpdateAdminInfo
+where
+    S: Sync + Send,
+{
+    type Rejection = AppError;
+
+    async fn from_request(req: Request, _state: &S) -> Result<Self, Self::Rejection> {
+        let info = Form::<UpdateAdminInfo>::from_request(req, _state).await?.0;
+        if let Some(ref name) = info.name {
+            is_valid_username(name)?;
+        }
+
+        if let Some(ref email) = info.email {
+            is_valid_email(email)?;
+        }
+        if let Some(ref nickname) = info.nickname {
+            is_valid_nickname(nickname)?;
+        }
+        if let Some(ref url) = info.github {
+            is_valid_github(url)?;
+        }
+        if let Some(ref number) = info.qq {
+            is_valid_qq(number)?;
+        }
+        Ok(info)
     }
 }
