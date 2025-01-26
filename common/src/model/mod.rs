@@ -1,10 +1,8 @@
 mod claims;
 pub use claims::*;
-mod login;
-pub use login::*;
+mod admin;
+pub use admin::*;
 mod session;
 pub use session::*;
-mod db;
-pub use db::*;
 mod upload;
 pub use upload::*;

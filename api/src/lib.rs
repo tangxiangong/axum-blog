@@ -2,8 +2,8 @@ use axum::{
     routing::{get, post},
     Router,
 };
+use common::AppState;
 use service::{handler::signin, middleware::global};
-use setting::AppState;
 
 mod protected;
 mod upload;

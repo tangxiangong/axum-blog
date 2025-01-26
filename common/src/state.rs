@@ -3,10 +3,15 @@ use axum::{
     extract::{FromRef, FromRequestParts},
     http::request::Parts,
 };
-use bb8::PooledConnection;
+use bb8::{Pool, PooledConnection};
 use bb8_redis::RedisConnectionManager;
 use sea_orm::DbConn;
-use setting::AppState;
+
+#[derive(Clone)]
+pub struct AppState {
+    pub db_conn: DbConn,
+    pub redis_pool: Pool<RedisConnectionManager>,
+}
 
 pub struct MySQLConn(pub DbConn);
 

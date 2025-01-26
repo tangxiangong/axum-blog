@@ -1,4 +1,4 @@
-use crate::{model::RedisPoolConn, AppError, AppResult};
+use crate::{AppError, AppResult, AppState, RedisPoolConn};
 use axum::{
     extract::{FromRef, OptionalFromRequestParts},
     http::request::Parts,
@@ -10,7 +10,6 @@ use redis::AsyncCommands;
 use redis_macros::{FromRedisValue, ToRedisArgs};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 use serde_json::Value;
-use setting::AppState;
 use std::collections::HashMap;
 use uuid::Uuid;
 

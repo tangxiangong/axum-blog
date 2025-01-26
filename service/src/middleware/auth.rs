@@ -1,7 +1,7 @@
 use axum::{extract::Request, middleware::Next, response::Response};
 use common::{
-    model::{Claims, RedisConn, Session},
-    AppError, AppResult,
+    model::{Claims, Session},
+    AppError, AppResult, RedisConn,
 };
 use redis::AsyncCommands;
 

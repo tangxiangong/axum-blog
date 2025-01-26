@@ -1,5 +1,6 @@
-use crate::{AppState, Setting, SiteInit};
+use crate::{Setting, SiteInit};
 use bb8_redis::RedisConnectionManager;
+use common::AppState;
 use std::time::Duration;
 use tokio::net::TcpListener;
 

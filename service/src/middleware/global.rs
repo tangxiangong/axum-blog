@@ -1,6 +1,6 @@
 use crate::middleware::timing;
 use axum::{extract::DefaultBodyLimit, http::Method, Router};
-use setting::AppState;
+use common::AppState;
 use std::time::Duration;
 use tower_http::{
     cors::{Any, CorsLayer},

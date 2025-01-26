@@ -5,4 +5,6 @@ mod macros;
 pub use error::*;
 pub mod entity;
 pub mod model;
+mod state;
+pub use state::*;
 pub mod utils;
