@@ -6,6 +6,7 @@ mod protected;
 mod public;
 
 mod admin;
+mod website;
 
 pub type StateRouter = Router<AppState>;
 
