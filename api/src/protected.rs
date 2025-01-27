@@ -1,12 +1,10 @@
-use crate::StateRouter;
+use crate::{admin, StateRouter};
 use axum::Router;
 use common::AppState;
 use service::middleware::auth;
 
-mod admin;
-
 pub fn routes(state: AppState) -> StateRouter {
     Router::new()
-        .merge(admin::routes())
+        .merge(admin::protected_routes())
         .layer(axum::middleware::from_fn_with_state(state.clone(), auth))
 }
