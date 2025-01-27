@@ -19,7 +19,7 @@ pub enum Expiry {
     OnInactivity(Duration),
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRedisValue, ToRedisArgs, Eq, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, FromRedisValue, ToRedisArgs, Eq, PartialEq)]
 pub struct Session {
     id: String,
     data: HashMap<String, Value>,
