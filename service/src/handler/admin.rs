@@ -42,8 +42,8 @@ pub async fn update_avatar(
 pub async fn update_pwd(
     MySQLConn(db_conn): MySQLConn,
     RedisConn(mut redis_conn): RedisConn,
-    session: Option<Extension<Session>>,
-    claims: Option<Extension<Claims>>,
+    session: Extension<Option<Session>>,
+    claims: Extension<Option<Claims>>,
     uid: Extension<String>,
     pwd: String,
 ) -> AppResult<()> {

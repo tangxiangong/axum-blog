@@ -56,10 +56,10 @@ pub async fn signin(
 /// 2. 将 JWT 加入黑名单(Redis)
 pub async fn signout(
     RedisConn(mut redis_conn): RedisConn,
-    claims: Option<Extension<Claims>>,
-    session: Option<Extension<Session>>,
+    claims: Extension<Option<Claims>>,
+    session: Extension<Option<Session>>,
 ) -> AppResult {
-    if let Some(session) = session {
+    if let Some(session) = session.0 {
         let session_id = session.id().to_string();
         // if let Some(payload) = session.payload() {}
         if redis_conn.exists(&session_id).await? {
@@ -67,7 +67,7 @@ pub async fn signout(
         }
     }
 
-    if let Some(claims) = claims {
+    if let Some(claims) = claims.0 {
         let token = claims.encode()?;
         let secs = claims.exp_secs();
         if !redis_conn.exists(&token).await? {
