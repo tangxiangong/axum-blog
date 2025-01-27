@@ -7,7 +7,7 @@ use common::{
 };
 use database::admin as db;
 
-pub async fn get_info(
+pub async fn info(
     MySQLConn(db_conn): MySQLConn,
     Extension(uid): Extension<String>,
 ) -> AppResponseResult<Admin> {

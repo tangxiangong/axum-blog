@@ -9,7 +9,7 @@ use crate::StateRouter;
 pub fn public_routes() -> StateRouter {
     Router::new()
         .route("/signin", post(signin))
-        .route("/admin", get(get_info))
+        .route("/admin", get(info))
 }
 
 pub fn protected_routes() -> StateRouter {
