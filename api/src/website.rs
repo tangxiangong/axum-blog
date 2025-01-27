@@ -13,5 +13,5 @@ pub fn protected_routes() -> StateRouter {
     Router::new()
         .route("/website", patch(update_info))
         .route("/website/upload/logo", patch(update_logo))
-        .route("website/upload/favicon", patch(update_favicon))
+        .route("/website/upload/favicon", patch(update_favicon))
 }
