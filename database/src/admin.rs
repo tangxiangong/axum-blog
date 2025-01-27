@@ -1,7 +1,7 @@
 use common::{
     entity::{admin, ActiveAdmin, Admin, AdminEntity},
     model::UpdateAdminInfo,
-    utils::cryption::decrypt,
+    utils::cryption::{decrypt, encrypt},
     AppError, AppResult,
 };
 use sea_orm::{prelude::*, DbConn, QuerySelect, Set};
@@ -70,5 +70,20 @@ pub async fn update_avatar(uid: &str, path: &str, db_conn: &DbConn) -> AppResult
         .into();
     admin.avatar = Set(Some(path.to_owned()));
     admin.save(db_conn).await?;
+    Ok(())
+}
+
+pub async fn update_pwd(uid: &str, pwd: &str, db_conn: &DbConn) -> AppResult {
+    let current_pwd = get_password(uid, db_conn).await?;
+    if pwd.eq(&current_pwd) {
+        return Err(AppError::bad_request("新密码与旧密码相同"));
+    }
+    let mut admin: ActiveAdmin = AdminEntity::find_by_id(uid)
+        .one(db_conn)
+        .await?
+        .unwrap()
+        .into();
+    let enc_pwd = encrypt(pwd)?;
+    admin.password = Set(enc_pwd);
     Ok(())
 }

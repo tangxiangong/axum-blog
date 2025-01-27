@@ -18,11 +18,13 @@ pub async fn auth(
         return Err(AppError::unauth("认证失败, 请重新登录"));
     }
     let uid = if let Some(mut session) = session_option {
+        req.extensions_mut().insert(session.clone());
         session.update(conn).await?;
         session.get("uid")?.unwrap()
     } else {
         // claims == Some
         let claims = claims.unwrap();
+        req.extensions_mut().insert(claims.clone());
         let token = claims.encode()?;
         // token 在黑名单中
         if conn.exists(&token).await? {

@@ -1,4 +1,5 @@
 use axum::{
+    extract::Extension,
     http::{header::SET_COOKIE, HeaderValue},
     response::IntoResponse,
 };
@@ -55,9 +56,9 @@ pub async fn signin(
 /// 2. 将 JWT 加入黑名单(Redis)
 pub async fn signout(
     RedisConn(mut redis_conn): RedisConn,
-    claims: Option<Claims>,
-    session: Option<Session>,
-) -> AppResult<&'static str> {
+    claims: Option<Extension<Claims>>,
+    session: Option<Extension<Session>>,
+) -> AppResult {
     if let Some(session) = session {
         let session_id = session.id().to_string();
         // if let Some(payload) = session.payload() {}
@@ -74,8 +75,7 @@ pub async fn signout(
             let _: () = redis_conn.expire(&token, secs).await?;
         }
     }
-
-    Ok("登出成功")
+    Ok(())
 }
 
 async fn create_session(
