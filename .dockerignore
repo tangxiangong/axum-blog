@@ -1,0 +1,17 @@
+target/
+.env
+.idea/
+.vscode/
+blog/
+README.md
+.gitignore
+.git/
+Cargo.lock
+Dockerfile
+docker-compose.yml
+migrations/
+.env.example
+.configration.yml.example
+LICENSE
+MIT-LICENSE
+rsa_key.pem
