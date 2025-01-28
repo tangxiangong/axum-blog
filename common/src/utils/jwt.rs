@@ -1,7 +1,7 @@
-use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use std::sync::LazyLock;
 
-use crate::{model::Claims, AppError, AppResult};
+use crate::{AppError, AppResult, model::Claims};
 
 static JWT_SECRET: LazyLock<Key> = LazyLock::new(|| {
     let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {

@@ -1,10 +1,10 @@
 use common::{
-    entity::{admin, ActiveAdmin, Admin, AdminEntity},
+    AppError, AppResult,
+    entity::{ActiveAdmin, Admin, AdminEntity, admin},
     model::UpdateAdminInfo,
     utils::cryption::{decrypt, encrypt},
-    AppError, AppResult,
 };
-use sea_orm::{prelude::*, DbConn, QuerySelect, Set};
+use sea_orm::{DbConn, QuerySelect, Set, prelude::*};
 
 use crate::set_value;
 

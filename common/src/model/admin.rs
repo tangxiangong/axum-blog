@@ -1,4 +1,4 @@
-use crate::{utils::validator::*, AppError};
+use crate::{AppError, utils::validator::*};
 use axum::{
     extract::{Form, FromRequest, FromRequestParts, Query, Request},
     http::request::Parts,

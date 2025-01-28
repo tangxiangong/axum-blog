@@ -36,9 +36,8 @@ where
     S: Send + Sync,
 {
     let mut mp = Multipart::from_request(req, state).await?;
-    if let Some(field) = mp.next_field().await? {
-        Ok(field.bytes().await?)
-    } else {
-        Err(AppError::bad_request("No file found"))
+    match mp.next_field().await? {
+        Some(field) => Ok(field.bytes().await?),
+        _ => Err(AppError::bad_request("No file found")),
     }
 }

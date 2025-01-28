@@ -1,6 +1,6 @@
 use axum::{
-    routing::{get, patch, post},
     Router,
+    routing::{get, patch, post},
 };
 use service::handler::{admin::*, signin, signout};
 

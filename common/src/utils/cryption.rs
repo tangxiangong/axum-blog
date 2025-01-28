@@ -3,8 +3,8 @@ use std::sync::LazyLock;
 use crate::{AppError, AppResult};
 use rand::thread_rng;
 use rsa::{
-    pkcs8::{DecodePrivateKey, EncodePrivateKey, LineEnding},
     Pkcs1v15Encrypt, RsaPrivateKey, RsaPublicKey,
+    pkcs8::{DecodePrivateKey, EncodePrivateKey, LineEnding},
 };
 use std::path::Path;
 

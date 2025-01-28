@@ -1,9 +1,9 @@
 use common::{
+    AppResult,
     entity::{ActiveWebsite, Website, WebsiteEntity},
     model::UpdateWebsiteInfo,
-    AppResult,
 };
-use sea_orm::{entity::prelude::*, Set};
+use sea_orm::{Set, entity::prelude::*};
 
 use crate::set_value;
 

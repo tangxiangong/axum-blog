@@ -1,8 +1,8 @@
-use crate::{utils::jwt::*, AppError, AppResult};
-use axum::{extract::OptionalFromRequestParts, http::request::Parts, RequestPartsExt};
+use crate::{AppError, AppResult, utils::jwt::*};
+use axum::{RequestPartsExt, extract::OptionalFromRequestParts, http::request::Parts};
 use axum_extra::{
-    headers::{authorization::Bearer, Authorization},
     TypedHeader,
+    headers::{Authorization, authorization::Bearer},
 };
 use chrono::{Duration, Local};
 use serde::{Deserialize, Serialize};
@@ -28,13 +28,14 @@ where
 {
     type Rejection = AppError;
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> AppResult<Option<Self>> {
-        if let Ok(Some(TypedHeader(Authorization(bearer)))) = parts
+        match parts
             .extract::<Option<TypedHeader<Authorization<Bearer>>>>()
             .await
         {
-            Ok(Some(Token(bearer.token().to_string())))
-        } else {
-            Ok(None)
+            Ok(Some(TypedHeader(Authorization(bearer)))) => {
+                Ok(Some(Token(bearer.token().to_string())))
+            }
+            _ => Ok(None),
         }
     }
 }
@@ -56,13 +57,12 @@ where
 {
     type Rejection = AppError;
     async fn from_request_parts(parts: &mut Parts, _state: &S) -> AppResult<Option<Self>> {
-        if let Ok(Some(Token(token))) = parts.extract::<Option<Token>>().await {
-            match Claims::decode(&token) {
+        match parts.extract::<Option<Token>>().await {
+            Ok(Some(Token(token))) => match Claims::decode(&token) {
                 Ok(claims) => Ok(Some(claims)),
                 Err(_) => Ok(None),
-            }
-        } else {
-            Ok(None)
+            },
+            _ => Ok(None),
         }
     }
 }

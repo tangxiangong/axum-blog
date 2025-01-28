@@ -1,12 +1,12 @@
 use axum::{
     extract::Extension,
-    http::{header::SET_COOKIE, HeaderValue},
+    http::{HeaderValue, header::SET_COOKIE},
     response::IntoResponse,
 };
 use axum_extra::extract::cookie::{Cookie, SameSite};
 use common::{
-    model::{Claims, Login, RememberMe, Session},
     AppError, AppResponse, AppResult, MySQLConn, RedisConn, RedisPoolConn,
+    model::{Claims, Login, RememberMe, Session},
 };
 use database::{
     admin::{get_password, get_uid},

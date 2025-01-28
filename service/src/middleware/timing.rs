@@ -8,10 +8,11 @@ pub async fn timing(req: Request, next: Next) -> Response {
     let mut res = next.run(req).await;
     let elapsed = start.elapsed().as_millis();
     let headermap = res.headers_mut();
-    if let Ok(v) = HeaderValue::from_str(&format!("{}ms", elapsed)) {
-        headermap.insert("X-Response-Elapsed", v);
-        res
-    } else {
-        res
+    match HeaderValue::from_str(&format!("{}ms", elapsed)) {
+        Ok(v) => {
+            headermap.insert("X-Response-Elapsed", v);
+            res
+        }
+        _ => res,
     }
 }

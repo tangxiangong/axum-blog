@@ -1,4 +1,4 @@
-use crate::{impl_into_bad_request_error, AppError, AppResult};
+use crate::{AppError, AppResult, impl_into_bad_request_error};
 use regex::Regex;
 use std::sync::LazyLock;
 use thiserror::Error;

@@ -1,9 +1,9 @@
 use common::{
+    AppResult,
     entity::{ActiveAdmin, ActiveWebsite, AdminEntity, WebsiteEntity},
     utils::cryption::encrypt,
-    AppResult,
 };
-use sea_orm::{prelude::*, DbConn, Set};
+use sea_orm::{DbConn, Set, prelude::*};
 use setting::SiteInit;
 
 pub async fn init(site: SiteInit, db_conn: &DbConn) -> AppResult {

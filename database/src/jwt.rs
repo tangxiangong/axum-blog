@@ -1,10 +1,10 @@
 use chrono::{Local, TimeZone};
 use common::{
-    entity::{jwt, ActiveJwt, JwtEntity},
-    model::Claims,
     AppResult,
+    entity::{ActiveJwt, JwtEntity, jwt},
+    model::Claims,
 };
-use sea_orm::{prelude::*, DbConn, QuerySelect, Set};
+use sea_orm::{DbConn, QuerySelect, Set, prelude::*};
 
 pub async fn add(uid: &str, db_conn: &DbConn) -> AppResult<String> {
     let claims = Claims::new(uid);

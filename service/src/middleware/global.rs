@@ -1,5 +1,5 @@
 use crate::middleware::timing;
-use axum::{extract::DefaultBodyLimit, http::Method, Router};
+use axum::{Router, extract::DefaultBodyLimit, http::Method};
 use common::AppState;
 use std::time::Duration;
 use tower_http::{

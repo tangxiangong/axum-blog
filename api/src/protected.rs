@@ -1,4 +1,4 @@
-use crate::{admin, website, StateRouter};
+use crate::{StateRouter, admin, website};
 use axum::Router;
 use common::AppState;
 use service::middleware::auth;

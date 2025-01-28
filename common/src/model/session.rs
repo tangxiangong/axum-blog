@@ -1,14 +1,14 @@
 use crate::{AppError, AppResult, AppState, RedisPoolConn};
 use axum::{
+    RequestPartsExt,
     extract::{FromRef, OptionalFromRequestParts},
     http::request::Parts,
-    RequestPartsExt,
 };
-use axum_extra::{headers::Cookie, TypedHeader};
+use axum_extra::{TypedHeader, headers::Cookie};
 use chrono::{DateTime, Duration, Local};
 use redis::AsyncCommands;
 use redis_macros::{FromRedisValue, ToRedisArgs};
-use serde::{de::DeserializeOwned, Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
 use std::collections::HashMap;
 use uuid::Uuid;
@@ -139,20 +139,15 @@ where
             .await
             .map_err(|e| AppError::internal(e.to_string()))?;
 
-        if let Ok(Some(TypedHeader(cookies))) = parts.extract::<Option<TypedHeader<Cookie>>>().await
-        {
-            match cookies.get("SESSION_ID") {
-                Some(id) => {
-                    if let Ok(Some(session)) = Self::load(id, conn).await {
-                        Ok(Some(session))
-                    } else {
-                        Ok(None)
-                    }
-                }
+        match parts.extract::<Option<TypedHeader<Cookie>>>().await {
+            Ok(Some(TypedHeader(cookies))) => match cookies.get("SESSION_ID") {
+                Some(id) => match Self::load(id, conn).await {
+                    Ok(Some(session)) => Ok(Some(session)),
+                    _ => Ok(None),
+                },
                 None => Ok(None),
-            }
-        } else {
-            Ok(None)
+            },
+            _ => Ok(None),
         }
     }
 }
