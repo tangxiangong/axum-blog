@@ -1,4 +1,9 @@
 mod cli;
-pub use cli::*;
 
 pub mod chat;
+
+mod response;
+
+mod error;
+
+pub mod prelude;

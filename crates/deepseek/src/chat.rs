@@ -1,11 +1,12 @@
 //! 对话补全
 //! 根据输入的上下文，来让模型补全对话内容
 
+use std::time::Duration;
+
+use crate::prelude::*;
 use derive_builder::Builder;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-
-use crate::DeepSeek;
 
 #[derive(Debug, Clone, Serialize, Builder)]
 #[builder(pattern = "mutable")]
@@ -63,18 +64,25 @@ pub struct Chat {
 }
 
 impl Chat {
-    pub async fn prompt(&mut self, content: &str) {
-        let message = Message::user(content);
-        self.messages.push(message);
-        Client::new()
-            .post(&self.cli.base_url)
+    async fn response(&mut self) -> Result<DeepSeekResponse, DeepSeekError> {
+        let url = format!("{}/v1/chat/completions", self.cli.base_url);
+        let res: DeepSeekResponse = Client::new()
+            .post(&url)
             .bearer_auth(&self.cli.api_key)
             .json(self)
-            .timeout(std::time::Duration::from_secs(30))
+            .timeout(Duration::from_secs(120))
             .send()
-            .await
-            .unwrap();
-        todo!()
+            .await?
+            .json()
+            .await?;
+        Ok(res)
+    }
+
+    pub async fn prompt(&mut self, content: &str) -> Result<String, DeepSeekError> {
+        let message = Message::user(content);
+        self.messages.push(message);
+        let res = self.response().await?;
+        Ok(res.completion())
     }
 }
 
@@ -125,6 +133,7 @@ impl Message {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "lowercase")]
 pub enum Role {
     System,
     User,
