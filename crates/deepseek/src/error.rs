@@ -1,8 +1,7 @@
 use reqwest::Error as HttpError;
-use thiserror::Error;
 
-#[derive(Debug, Clone, Error)]
-pub enum DeepSeekError {
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
     /// 400 格式错误。原因：请求体格式错误
     #[error("请求体格式错误: {0}")]
     BadRequest(String),
@@ -30,27 +29,33 @@ pub enum DeepSeekError {
     /// 未知错误
     #[error("未知错误: {0}")]
     Unknown(String),
+    #[error("内部错误: {0}")]
+    Internal(String),
+    #[error("序列化错误: {0}")]
+    SerdeError(#[from] serde_json::Error),
+    #[error("UTF-8 解码错误: {0}")]
+    Utf8Error(#[from] std::str::Utf8Error),
+    #[error("IO 错误: {0}")]
+    IoError(#[from] std::io::Error),
 }
 
-impl From<HttpError> for DeepSeekError {
+impl From<HttpError> for Error {
     fn from(e: HttpError) -> Self {
         if e.is_timeout() {
-            DeepSeekError::Timeout
+            Error::Timeout
         } else if e.is_status() {
             match e.status().unwrap() {
-                reqwest::StatusCode::BAD_REQUEST => DeepSeekError::BadRequest(e.to_string()),
-                reqwest::StatusCode::UNAUTHORIZED => DeepSeekError::Unauthorized,
-                reqwest::StatusCode::PAYMENT_REQUIRED => DeepSeekError::PaymentRequired,
-                reqwest::StatusCode::UNPROCESSABLE_ENTITY => {
-                    DeepSeekError::ArgumentError(e.to_string())
-                }
-                reqwest::StatusCode::TOO_MANY_REQUESTS => DeepSeekError::TooManyRequests,
-                reqwest::StatusCode::INTERNAL_SERVER_ERROR => DeepSeekError::InternalServerError,
-                reqwest::StatusCode::SERVICE_UNAVAILABLE => DeepSeekError::ServiceUnavailable,
-                _ => DeepSeekError::Unknown(e.to_string()),
+                reqwest::StatusCode::BAD_REQUEST => Error::BadRequest(e.to_string()),
+                reqwest::StatusCode::UNAUTHORIZED => Error::Unauthorized,
+                reqwest::StatusCode::PAYMENT_REQUIRED => Error::PaymentRequired,
+                reqwest::StatusCode::UNPROCESSABLE_ENTITY => Error::ArgumentError(e.to_string()),
+                reqwest::StatusCode::TOO_MANY_REQUESTS => Error::TooManyRequests,
+                reqwest::StatusCode::INTERNAL_SERVER_ERROR => Error::InternalServerError,
+                reqwest::StatusCode::SERVICE_UNAVAILABLE => Error::ServiceUnavailable,
+                _ => Error::Unknown(e.to_string()),
             }
         } else {
-            DeepSeekError::Unknown(e.to_string())
+            Error::Unknown(e.to_string())
         }
     }
 }

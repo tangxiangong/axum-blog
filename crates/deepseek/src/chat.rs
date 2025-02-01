@@ -1,12 +1,15 @@
 //! 对话补全
 //! 根据输入的上下文，来让模型补全对话内容
 
-use std::time::Duration;
-
-use crate::prelude::*;
+use crate::{prelude::*, stream::StreamResponse};
+use bytes::Bytes;
 use derive_builder::Builder;
+use futures::{Stream, StreamExt};
 use reqwest::Client;
+use reqwest::Result as HttpResult;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
+// use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 #[derive(Debug, Clone, Serialize, Builder)]
 #[builder(pattern = "mutable")]
@@ -64,25 +67,67 @@ pub struct Chat {
 }
 
 impl Chat {
-    async fn response(&mut self) -> Result<DeepSeekResponse, DeepSeekError> {
+    async fn send(&mut self) -> Result<reqwest::Response, Error> {
         let url = format!("{}/v1/chat/completions", self.cli.base_url);
-        let res: DeepSeekResponse = Client::new()
+        let res = Client::new()
             .post(&url)
             .bearer_auth(&self.cli.api_key)
             .json(self)
             .timeout(Duration::from_secs(120))
             .send()
             .await?
-            .json()
-            .await?;
+            .error_for_status()?;
         Ok(res)
     }
 
-    pub async fn prompt(&mut self, content: &str) -> Result<String, DeepSeekError> {
+    async fn response(&mut self) -> Result<Response, Error> {
+        let res: Response = self.send().await?.json().await?;
+        Ok(res)
+    }
+
+    async fn stream_response(&mut self) -> Result<impl Stream<Item = HttpResult<Bytes>>, Error> {
+        let res = self.send().await?.bytes_stream();
+        Ok(res)
+    }
+
+    pub fn prompt(&mut self, content: &str) -> &mut Self {
         let message = Message::user(content);
         self.messages.push(message);
+        self
+    }
+
+    pub async fn completion(&mut self) -> Result<String, Error> {
         let res = self.response().await?;
-        Ok(res.completion())
+        Ok(res.content())
+    }
+
+    pub async fn stream_completion<W>(
+        &mut self,
+        // #[allow(unused_variables, unused_mut)] mut w: Option<W>,
+    ) -> Result<String, Error>
+// where
+    //     W: AsyncWrite + Unpin,
+    {
+        let mut stream = self.stream_response().await?;
+        let mut content = String::new();
+        // if w.is_some() {
+        //     let writer = w.as_mut().unwrap();
+        // }
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk?;
+            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ").unwrap();
+            if chunk == "[DONE]" {
+                break;
+            }
+            let res = serde_json::from_str::<StreamResponse>(chunk)?;
+            let delta_content = res.delta_content();
+            // if w.is_some() {
+            //     writer.write_all(delta_content.as_bytes()).await?;
+            //     writer.flush().await?;
+            // }
+            content.push_str(&delta_content);
+        }
+        Ok(content)
     }
 }
 

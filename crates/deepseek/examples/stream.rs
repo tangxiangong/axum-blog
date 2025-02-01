@@ -1,7 +1,7 @@
-use std::time::Duration;
-
+use futures::StreamExt;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
+use std::time::Duration;
 
 #[derive(Debug, Serialize)]
 struct Message {
@@ -41,16 +41,16 @@ struct Response {
     created: i64,
     system_fingerprint: Option<String>,
     object: String,
-    usage: Usage,
+    usage: Option<Usage>,
     choices: Vec<Choice>,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct Choice {
-    finish_reason: String,
+    finish_reason: Option<String>,
     index: usize,
-    message: ResMessage,
+    delta: ResMessage,
     logprobs: Option<Logprobs>,
 }
 
@@ -83,7 +83,7 @@ struct ResMessage {
     content: Option<String>,
     reasoning_content: Option<String>,
     tool_calls: Option<Vec<Calls>>,
-    role: Role,
+    role: Option<Role>,
 }
 
 #[allow(dead_code)]
@@ -105,7 +105,7 @@ struct Function {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct Usage {
-    completion_tokens: usize,
+    completion_tokens: Option<usize>,
     prompt_tokens: usize,
     prompt_cache_hit_tokens: Option<usize>,
     promt_cache_miss_tokens: Option<usize>,
@@ -116,11 +116,11 @@ struct Usage {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct Details {
-    reasoning_tokens: usize,
+    reasoning_tokens: Option<usize>,
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     let api_key = std::env::var("DEEPSEEK_API_KEY").expect("API KEY 未在环境变量中设置");
     let base_url = std::env::var("DEEPSEEK_BASE_URL").expect("BASE URL 未在环境变量中设置");
@@ -133,13 +133,13 @@ async fn main() {
         },
         Message {
             role: Role::User,
-            content: "Hello".into(),
+            content: "介绍一下你自己".into(),
         },
     ];
     let chat = Chat {
-        model: Model::Reasoner,
+        model: Model::Chat,
         messages,
-        stream: false,
+        stream: true,
     };
 
     let req = Client::new()
@@ -148,15 +148,31 @@ async fn main() {
         .json(&chat)
         .timeout(Duration::from_secs(10));
     let res = req.send().await.unwrap();
-    let res: Response = res.json().await.unwrap();
-    let completion = res
-        .choices
-        .first()
-        .unwrap()
-        .message
-        .content
-        .as_ref()
-        .unwrap();
+    let mut stream = res.bytes_stream();
+    while let Some(item) = stream.next().await {
+        let item = item?;
+        // let item = serde_json::from_slice::<Response>(&item)?;
+        let item = std::str::from_utf8(&item)
+            .unwrap()
+            .strip_prefix("data: ")
+            .unwrap();
+        if item.eq("[DONE]") {
+            break;
+        }
+        // println!("{:#?}", item);
+
+        let item: Response = serde_json::from_str(item)?;
+        let completion = item
+            .choices
+            .first()
+            .unwrap()
+            .delta
+            .content
+            .as_ref()
+            .unwrap();
+        print!("{}", completion);
+    }
     // let res = res.text().await.unwrap();
-    println!("{}", completion);
+    // println!("{}", completion);
+    Ok(())
 }

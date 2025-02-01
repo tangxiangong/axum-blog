@@ -1,19 +1,20 @@
-use crate::chat::Role;
+use crate::prelude::{Model, Role};
 use serde::Deserialize;
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
-pub struct DeepSeekResponse {
+pub struct Response {
     id: String,
     created: i64,
     system_fingerprint: Option<String>,
     object: String,
     usage: Usage,
     choices: Vec<Choice>,
+    model: Model,
 }
 
-impl DeepSeekResponse {
-    pub fn completion(&self) -> String {
+impl Response {
+    pub fn content(&self) -> String {
         self.choices
             .first()
             .unwrap()
@@ -69,8 +70,7 @@ struct ResMessage {
 #[derive(Debug, Deserialize, Clone)]
 struct Calls {
     id: String,
-    #[serde(rename = "type")]
-    type_: String,
+    r#type: String,
     function: Function,
 }
 
@@ -83,7 +83,7 @@ struct Function {
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
-struct Usage {
+pub(crate) struct Usage {
     completion_tokens: usize,
     prompt_tokens: usize,
     prompt_cache_hit_tokens: Option<usize>,

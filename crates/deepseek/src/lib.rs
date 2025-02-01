@@ -6,4 +6,6 @@ mod response;
 
 mod error;
 
+mod stream;
+
 pub mod prelude;
