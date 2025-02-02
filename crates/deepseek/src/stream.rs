@@ -6,7 +6,9 @@ use bytes::Bytes;
 use futures::{Stream, StreamExt};
 use reqwest::Result as HttpResult;
 use serde::Deserialize;
+// use std::time::Duration;
 use std::{ops::Deref, pin::Pin};
+// use tokio::time;
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
@@ -94,12 +96,15 @@ impl ByteStream {
         let stream = &mut self.0;
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ");
+            let chunk_str = std::str::from_utf8(&chunk)?;
+            let chunk = chunk_str.strip_prefix("data: ");
             let chunk = match chunk {
-                Some(chunk) => chunk,
-                None => continue,
+                Some(chunk) => chunk.trim(),
+                None => {
+                    continue;
+                }
             };
-            if chunk == "[DONE]" {
+            if chunk.is_empty() || chunk == "[DONE]" {
                 break;
             }
             let res = serde_json::from_str::<BasicStreamResponse>(chunk)?;
@@ -110,6 +115,16 @@ impl ByteStream {
         }
         Ok(content)
     }
+
+    // pub async fn keep_alive(&mut self) -> Result<(), Error> {
+    //     let mut interval = time::interval(Duration::from_secs(15));
+
+    //     loop {
+    //         interval.tick().await;
+    //         // 由于 Stream 不支持发送数据，我们改为返回一个信号，由外层处理心跳
+    //         return Ok(());
+    //     }
+    // }
 }
 
 #[allow(dead_code)]
@@ -125,5 +140,5 @@ struct StreamChoice {
 struct StreamMessage {
     content: Option<String>,
     resoning_content: Option<String>,
-    role: Role,
+    role: Option<Role>,
 }

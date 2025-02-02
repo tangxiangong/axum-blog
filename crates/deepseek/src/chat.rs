@@ -61,6 +61,10 @@ pub struct Chat {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(setter(strip_option), default)]
     top_logprobs: Option<usize>,
+    // /// 启用心跳机制（需要自行实现流式传输层）
+    // #[serde(skip_serializing)]
+    // #[builder(setter(strip_option), default)]
+    // pub(crate) heartbeat: Option<bool>,
 }
 
 impl Chat {
@@ -75,7 +79,7 @@ impl Chat {
             .post(&url)
             .bearer_auth(&self.cli.api_key)
             .json(self)
-            .timeout(Duration::from_secs(30))
+            .timeout(Duration::from_secs(600))
             .send()
             .await?
             .error_for_status()?;

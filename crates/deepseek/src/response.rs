@@ -28,7 +28,7 @@ impl Response {
     }
 
     pub fn completion_tokens(&self) -> usize {
-        self.usage.completion_tokens
+        self.usage.completion_tokens.unwrap()
     }
 
     pub fn prompt_tokens(&self) -> usize {
@@ -40,10 +40,10 @@ impl Response {
     }
 
     pub fn reasoning_tokens(&self) -> Option<usize> {
-        self.usage
-            .completion_tokens_details
-            .as_ref()
-            .map(|details| details.reasoning_tokens)
+        match self.usage.completion_tokens_details {
+            Some(ref details) => details.reasoning_tokens,
+            None => None,
+        }
     }
 }
 
@@ -106,7 +106,7 @@ struct Function {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Usage {
-    pub(crate) completion_tokens: usize,
+    pub(crate) completion_tokens: Option<usize>,
     pub(crate) prompt_tokens: usize,
     pub(crate) prompt_cache_hit_tokens: Option<usize>,
     pub(crate) promt_cache_miss_tokens: Option<usize>,
@@ -117,5 +117,5 @@ pub(crate) struct Usage {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Details {
-    pub(crate) reasoning_tokens: usize,
+    pub(crate) reasoning_tokens: Option<usize>,
 }
