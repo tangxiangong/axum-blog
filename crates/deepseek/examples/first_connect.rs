@@ -137,7 +137,7 @@ async fn main() {
         },
     ];
     let chat = Chat {
-        model: Model::Reasoner,
+        model: Model::Chat,
         messages,
         stream: false,
     };
