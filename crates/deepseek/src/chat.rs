@@ -1,15 +1,11 @@
 //! 对话补全
 //! 根据输入的上下文，来让模型补全对话内容
 
-use crate::{prelude::*, stream::StreamResponse};
-use bytes::Bytes;
+use crate::{prelude::*, stream::ByteStream};
 use derive_builder::Builder;
-use futures::{Stream, StreamExt};
 use reqwest::Client;
-use reqwest::Result as HttpResult;
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
-// use tokio::io::{AsyncWrite, AsyncWriteExt};
 
 #[derive(Debug, Clone, Serialize, Builder)]
 #[builder(pattern = "mutable")]
@@ -80,54 +76,19 @@ impl Chat {
         Ok(res)
     }
 
-    async fn response(&mut self) -> Result<Response, Error> {
-        let res: Response = self.send().await?.json().await?;
-        Ok(res)
-    }
-
-    async fn stream_response(&mut self) -> Result<impl Stream<Item = HttpResult<Bytes>>, Error> {
-        let res = self.send().await?.bytes_stream();
-        Ok(res)
-    }
-
-    pub fn prompt(&mut self, content: &str) -> &mut Self {
+    pub async fn stream_prompt(&mut self, content: &str) -> Result<ByteStream, Error> {
         let message = Message::user(content);
         self.messages.push(message);
-        self
+        let res = self.send().await?;
+        let stream = res.bytes_stream();
+        Ok(ByteStream::new(stream))
     }
 
-    pub async fn completion(&mut self) -> Result<String, Error> {
-        let res = self.response().await?;
-        Ok(res.content())
-    }
-
-    pub async fn stream_completion<W>(
-        &mut self,
-        // #[allow(unused_variables, unused_mut)] mut w: Option<W>,
-    ) -> Result<String, Error>
-// where
-    //     W: AsyncWrite + Unpin,
-    {
-        let mut stream = self.stream_response().await?;
-        let mut content = String::new();
-        // if w.is_some() {
-        //     let writer = w.as_mut().unwrap();
-        // }
-        while let Some(chunk) = stream.next().await {
-            let chunk = chunk?;
-            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ").unwrap();
-            if chunk == "[DONE]" {
-                break;
-            }
-            let res = serde_json::from_str::<StreamResponse>(chunk)?;
-            let delta_content = res.delta_content();
-            // if w.is_some() {
-            //     writer.write_all(delta_content.as_bytes()).await?;
-            //     writer.flush().await?;
-            // }
-            content.push_str(&delta_content);
-        }
-        Ok(content)
+    pub async fn prompt(&mut self, content: &str) -> Result<Response, Error> {
+        let message = Message::user(content);
+        self.messages.push(message);
+        let res: Response = self.send().await?.json().await?;
+        Ok(res)
     }
 }
 

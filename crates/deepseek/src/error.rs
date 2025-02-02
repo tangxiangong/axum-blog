@@ -37,6 +37,8 @@ pub enum Error {
     Utf8Error(#[from] std::str::Utf8Error),
     #[error("IO 错误: {0}")]
     IoError(#[from] std::io::Error),
+    #[error("配置错误: {0}")]
+    ConfigError(String),
 }
 
 impl From<HttpError> for Error {

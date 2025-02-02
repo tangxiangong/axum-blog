@@ -13,9 +13,10 @@ async fn main() -> Result<()> {
         .context("Failed to build chat request")?;
     let completion = chat
         .prompt("单词 strawberry 中有几个字母 r?")
-        .completion()
         .await
-        .context("Failed to prompt chat")?;
+        .context("Failed to prompt chat")?
+        .content()
+        .unwrap();
 
     println!("Completion: {}", completion);
     Ok(())

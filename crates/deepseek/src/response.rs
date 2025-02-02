@@ -14,14 +14,36 @@ pub struct Response {
 }
 
 impl Response {
-    pub fn content(&self) -> String {
+    pub fn content(&self) -> Option<String> {
+        self.choices.first().unwrap().message.content.clone()
+    }
+
+    pub fn reasoning_content(&self) -> Option<String> {
         self.choices
             .first()
             .unwrap()
             .message
-            .content
+            .reasoning_content
             .clone()
-            .unwrap()
+    }
+
+    pub fn completion_tokens(&self) -> usize {
+        self.usage.completion_tokens
+    }
+
+    pub fn prompt_tokens(&self) -> usize {
+        self.usage.prompt_tokens
+    }
+
+    pub fn total_tokens(&self) -> usize {
+        self.usage.total_tokens
+    }
+
+    pub fn reasoning_tokens(&self) -> Option<usize> {
+        self.usage
+            .completion_tokens_details
+            .as_ref()
+            .map(|details| details.reasoning_tokens)
     }
 }
 
@@ -84,16 +106,16 @@ struct Function {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
 pub(crate) struct Usage {
-    completion_tokens: usize,
-    prompt_tokens: usize,
-    prompt_cache_hit_tokens: Option<usize>,
-    promt_cache_miss_tokens: Option<usize>,
-    total_tokens: usize,
+    pub(crate) completion_tokens: usize,
+    pub(crate) prompt_tokens: usize,
+    pub(crate) prompt_cache_hit_tokens: Option<usize>,
+    pub(crate) promt_cache_miss_tokens: Option<usize>,
+    pub(crate) total_tokens: usize,
     completion_tokens_details: Option<Details>,
 }
 
 #[allow(dead_code)]
 #[derive(Debug, Deserialize, Clone)]
-struct Details {
-    reasoning_tokens: usize,
+pub(crate) struct Details {
+    pub(crate) reasoning_tokens: usize,
 }
