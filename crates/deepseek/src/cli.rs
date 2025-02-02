@@ -1,5 +1,3 @@
-// use reqwest::{Client, RequestBuilder};
-
 use crate::chat::{ChatBuilder, Model};
 
 const BASE_URL: &str = "https://api.deepseek.com";
@@ -8,7 +6,6 @@ const BASE_URL: &str = "https://api.deepseek.com";
 pub struct DeepSeek {
     pub(crate) base_url: String,
     pub(crate) api_key: String,
-    // pub cli: RequestBuilder,
 }
 
 impl Default for DeepSeek {
@@ -28,10 +25,11 @@ impl DeepSeek {
         }
     }
 
-    pub fn from_env() -> Self {
-        let api_key = std::env::var("DEEPSEEK_API_KEY").expect("API KEY 未在环境变量中设置");
+    pub fn from_env() -> Result<Self, String> {
+        let api_key = std::env::var("DEEPSEEK_API_KEY")
+            .map_err(|_| "API KEY 未在环境变量中设置".to_owned())?;
         let base_url = std::env::var("DEEPSEEK_BASE_URL").unwrap_or_else(|_| BASE_URL.into());
-        Self { base_url, api_key }
+        Ok(Self { base_url, api_key })
     }
 
     pub fn model(&self, m: Model) -> ChatBuilder {

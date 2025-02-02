@@ -4,10 +4,10 @@ use deepseek::prelude::*;
 #[tokio::main]
 async fn main() -> Result<()> {
     dotenvy::dotenv().ok();
-    let deepseek_cli = DeepSeek::from_env();
+    let deepseek_cli = DeepSeek::from_env().unwrap();
     let mut chat = deepseek_cli
         .model(Model::Reasoner)
-        .preamer("You are a helpful assistant.")
+        .preamble("You are a helpful assistant.")
         .temperature(0.0)
         .build()
         .context("Failed to build chat request")?;

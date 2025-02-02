@@ -23,7 +23,7 @@ pub struct Chat {
     /// 介于 1 到 8192 间的整数，限制一次请求中模型生成 completion 的最大 token 数。输入 token 和输出 token 的总长度受模型的上下文长度的限制。默认使用 4096
     #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(setter(strip_option), default)]
-    max_tokeons: Option<usize>,
+    max_tokens: Option<usize>,
     /// 介于 -2.0 和 2.0 之间的数字。如果该值为正，那么新 token 会根据其是否已在已有文本中出现受到相应的惩罚，从而增加模型谈论新主题的可能性。默认为 0
     #[serde(skip_serializing_if = "Option::is_none")]
     #[builder(setter(strip_option), default)]
@@ -93,7 +93,7 @@ impl Chat {
 }
 
 impl ChatBuilder {
-    pub fn preamer(&mut self, content: &str) -> &mut Self {
+    pub fn preamble(&mut self, content: &str) -> &mut Self {
         let message = Message::system(content);
         self.messages = Some(vec![message]);
         self

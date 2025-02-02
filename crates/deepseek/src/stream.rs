@@ -94,7 +94,11 @@ impl ByteStream {
         let stream = &mut self.0;
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ").unwrap();
+            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ");
+            let chunk = match chunk {
+                Some(chunk) => chunk,
+                None => continue,
+            };
             if chunk == "[DONE]" {
                 break;
             }
