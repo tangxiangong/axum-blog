@@ -81,8 +81,12 @@ impl ByteStream {
         let stream = &mut self.0;
         while let Some(chunk) = stream.next().await {
             let chunk = chunk?;
-            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ").unwrap();
-            if chunk == "[DONE]" {
+            let chunk = std::str::from_utf8(&chunk)?.strip_prefix("data: ");
+            let chunk = match chunk {
+                Some(chunk) => chunk.trim(),
+                None => continue,
+            };
+            if chunk.is_empty() || chunk == "[DONE]" {
                 break;
             }
             let res = serde_json::from_str::<BasicStreamResponse>(chunk)?;
@@ -100,9 +104,7 @@ impl ByteStream {
             let chunk = chunk_str.strip_prefix("data: ");
             let chunk = match chunk {
                 Some(chunk) => chunk.trim(),
-                None => {
-                    continue;
-                }
+                None => continue,
             };
             if chunk.is_empty() || chunk == "[DONE]" {
                 break;
@@ -113,6 +115,7 @@ impl ByteStream {
             std::io::Write::flush(&mut std::io::stdout())?;
             content.push_str(&delta_content);
         }
+        println!();
         Ok(content)
     }
 
