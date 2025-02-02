@@ -3,7 +3,8 @@
 
 use crate::{prelude::*, stream::ByteStream};
 use derive_builder::Builder;
-use reqwest::Client;
+use reqwest_middleware::ClientBuilder;
+use reqwest_retry::{RetryTransientMiddleware, policies::ExponentialBackoff};
 use serde::{Deserialize, Serialize};
 use std::time::Duration;
 
@@ -65,11 +66,16 @@ pub struct Chat {
 impl Chat {
     async fn send(&mut self) -> Result<reqwest::Response, Error> {
         let url = format!("{}/v1/chat/completions", self.cli.base_url);
-        let res = Client::new()
+        let retry_policy = ExponentialBackoff::builder().build_with_max_retries(3);
+        let client = ClientBuilder::new(reqwest::Client::new())
+            // .with(TracingMiddleware::default())
+            .with(RetryTransientMiddleware::new_with_policy(retry_policy))
+            .build();
+        let res = client
             .post(&url)
             .bearer_auth(&self.cli.api_key)
             .json(self)
-            .timeout(Duration::from_secs(120))
+            .timeout(Duration::from_secs(30))
             .send()
             .await?
             .error_for_status()?;

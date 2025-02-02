@@ -1,4 +1,4 @@
-use reqwest::Error as HttpError;
+use reqwest_middleware::Error as HttpError;
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -43,6 +43,27 @@ pub enum Error {
 
 impl From<HttpError> for Error {
     fn from(e: HttpError) -> Self {
+        if e.is_timeout() {
+            Error::Timeout
+        } else if e.is_status() {
+            match e.status().unwrap() {
+                reqwest::StatusCode::BAD_REQUEST => Error::BadRequest(e.to_string()),
+                reqwest::StatusCode::UNAUTHORIZED => Error::Unauthorized,
+                reqwest::StatusCode::PAYMENT_REQUIRED => Error::PaymentRequired,
+                reqwest::StatusCode::UNPROCESSABLE_ENTITY => Error::ArgumentError(e.to_string()),
+                reqwest::StatusCode::TOO_MANY_REQUESTS => Error::TooManyRequests,
+                reqwest::StatusCode::INTERNAL_SERVER_ERROR => Error::InternalServerError,
+                reqwest::StatusCode::SERVICE_UNAVAILABLE => Error::ServiceUnavailable,
+                _ => Error::Unknown(e.to_string()),
+            }
+        } else {
+            Error::Unknown(e.to_string())
+        }
+    }
+}
+
+impl From<reqwest::Error> for Error {
+    fn from(e: reqwest::Error) -> Self {
         if e.is_timeout() {
             Error::Timeout
         } else if e.is_status() {
