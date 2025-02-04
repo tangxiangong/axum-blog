@@ -2,101 +2,172 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-import {
-  Menu as IconMenu,
-  Document,
-  Location,
-  Setting,
-  HomeFilled,
-  CollectionTag
-} from '@element-plus/icons-vue'
 
 const router = useRouter()
 const authStore = useAuthStore()
 
-const isCollapse = ref(false)
-
 const handleLogout = () => {
   authStore.logout()
-  router.push('/login')
+  router.push('/admin/login')
 }
 </script>
 
 <template>
-  <div class="min-h-screen">
-    <el-container class="h-screen">
-      <!-- 侧边栏 -->
-      <el-aside :width="isCollapse ? '64px' : '200px'" class="bg-gray-800">
-        <el-menu
-          :collapse="isCollapse"
-          class="h-full"
-          background-color="#1F2937"
-          text-color="#fff"
-          active-text-color="#409EFF"
-        >
-          <el-menu-item index="1" @click="router.push('/admin')">
-            <el-icon><HomeFilled /></el-icon>
-            <span>仪表盘</span>
-          </el-menu-item>
-          
-          <el-menu-item index="2" @click="router.push('/admin/posts')">
-            <el-icon><Document /></el-icon>
-            <span>文章管理</span>
-          </el-menu-item>
-          
-          <el-menu-item index="3" @click="router.push('/admin/categories')">
-            <el-icon><Location /></el-icon>
-            <span>分类管理</span>
-          </el-menu-item>
-          
-          <el-menu-item index="4" @click="router.push('/admin/tags')">
-            <el-icon><CollectionTag /></el-icon>
-            <span>标签管理</span>
-          </el-menu-item>
-          
-          <el-menu-item index="5" @click="router.push('/admin/profile')">
-            <el-icon><Setting /></el-icon>
-            <span>个人设置</span>
-          </el-menu-item>
-        </el-menu>
-      </el-aside>
-
-      <!-- 主要内容区 -->
-      <el-container>
-        <el-header class="bg-white border-b flex items-center justify-between px-4">
-          <el-button type="text" @click="isCollapse = !isCollapse">
-            <el-icon><IconMenu /></el-icon>
-          </el-button>
-          
-          <div class="flex items-center gap-4">
-            <el-dropdown @command="handleLogout">
-              <span class="flex items-center cursor-pointer">
-                <el-avatar :size="32" :src="authStore.userInfo?.avatar" />
-                <span class="ml-2">{{ authStore.userInfo?.username }}</span>
-              </span>
-              <template #dropdown>
-                <el-dropdown-menu>
-                  <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-                </el-dropdown-menu>
-              </template>
-            </el-dropdown>
-          </div>
-        </el-header>
-
-        <el-main class="bg-gray-50">
-          <router-view />
-        </el-main>
-      </el-container>
-    </el-container>
+  <div class="admin-layout">
+    <header class="admin-header">
+      <div class="header-left">
+        <h1 class="site-title">博客后台</h1>
+        <nav class="main-nav">
+          <router-link to="/admin/dashboard" class="nav-item">
+            <i class="fas fa-tachometer-alt"></i>
+            仪表盘
+          </router-link>
+          <router-link to="/admin/posts" class="nav-item">
+            <i class="fas fa-file-alt"></i>
+            文章管理
+          </router-link>
+          <router-link to="/admin/categories" class="nav-item">
+            <i class="fas fa-folder"></i>
+            分类管理
+          </router-link>
+          <router-link to="/admin/tags" class="nav-item">
+            <i class="fas fa-tags"></i>
+            标签管理
+          </router-link>
+          <router-link to="/admin/profile" class="nav-item">
+            <i class="fas fa-user"></i>
+            个人资料
+          </router-link>
+        </nav>
+      </div>
+      <div class="header-right">
+        <div class="user-info">
+          <span>小雨</span>
+          <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="头像" class="avatar">
+        </div>
+        <button class="logout-btn" @click="handleLogout">
+          <i class="fas fa-sign-out-alt"></i>
+          退出
+        </button>
+      </div>
+    </header>
+    <main class="admin-content">
+      <div class="content-wrapper">
+        <RouterView />
+      </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
-.el-aside {
-  transition: width 0.3s;
+.admin-layout {
+  min-height: 100vh;
+  background-color: #f1f5f9;
 }
 
-.el-header {
-  height: 60px;
+.admin-header {
+  height: 64px;
+  background-color: #1e293b;
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.site-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+}
+
+.main-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e2e8f0;
+  text-decoration: none;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.375rem;
+  transition: background-color 0.2s;
+  font-size: 0.875rem;
+}
+
+.nav-item:hover {
+  background-color: #334155;
+}
+
+.nav-item.router-link-active {
+  background-color: #2563eb;
+  color: white;
+}
+
+.nav-item i {
+  font-size: 0.875rem;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: white;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: background-color 0.2s;
+}
+
+.logout-btn:hover {
+  background-color: #b91c1c;
+}
+
+.admin-content {
+  padding-top: 64px;
+  min-height: calc(100vh - 64px);
+}
+
+.content-wrapper {
+  padding: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 </style> 

@@ -59,7 +59,6 @@ const handleUploadImage = async (files: FileList, callback: (urls: string[]) => 
   }
 }
 
-`
 const rules = ref<FormRules>({
   title: [
     { required: true, message: '请输入文章标题', trigger: 'blur' },
