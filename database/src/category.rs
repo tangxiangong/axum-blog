@@ -84,3 +84,8 @@ pub async fn delete_by_name(name: &str, db_conn: &DbConn) -> AppResult {
     let _ = active_model.delete(db_conn).await?;
     Ok(())
 }
+
+pub async fn list(db_conn: &DbConn) -> AppResult<Vec<Category>> {
+    let result = CategoryEntity::find().all(db_conn).await?;
+    Ok(result)
+}
