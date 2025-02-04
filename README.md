@@ -27,3 +27,5 @@ Axum + Vue3 + MySQL 搭建的个人博客网站
   - [ ] API 层
 - [ ] `comment` 相关功能
 - [ ] 腾讯云 COS SDK
+- [ ] 接入 DeepSeek
+  - [x] [SDK](./crates/deepseek/)
