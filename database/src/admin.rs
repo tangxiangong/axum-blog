@@ -1,3 +1,4 @@
+use crate::set_value;
 use common::{
     AppError, AppResult,
     entity::{ActiveAdmin, Admin, AdminEntity, admin},
@@ -5,8 +6,6 @@ use common::{
     utils::cryption::{decrypt, encrypt},
 };
 use sea_orm::{DbConn, QuerySelect, Set, prelude::*};
-
-use crate::set_value;
 
 pub async fn get_password(name: &str, db_conn: &DbConn) -> AppResult<String> {
     let en_password = AdminEntity::find()
@@ -59,6 +58,7 @@ pub async fn update_info(uid: &str, info: UpdateAdminInfo, db_conn: &DbConn) -> 
         (wechat, info.wechat),
         (qq, info.qq)
     );
+    admin.update(db_conn).await?;
     Ok(())
 }
 
@@ -69,7 +69,7 @@ pub async fn update_avatar(uid: &str, path: &str, db_conn: &DbConn) -> AppResult
         .unwrap()
         .into();
     admin.avatar = Set(Some(path.to_owned()));
-    admin.save(db_conn).await?;
+    admin.update(db_conn).await?;
     Ok(())
 }
 
@@ -85,5 +85,6 @@ pub async fn update_pwd(uid: &str, pwd: &str, db_conn: &DbConn) -> AppResult {
         .into();
     let enc_pwd = encrypt(pwd)?;
     admin.password = Set(enc_pwd);
+    admin.update(db_conn).await?;
     Ok(())
 }

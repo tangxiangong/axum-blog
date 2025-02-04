@@ -21,18 +21,20 @@ pub async fn update_info(info: UpdateWebsiteInfo, db_conn: &DbConn) -> AppResult
         (subtitle, info.subtitle),
         (description, info.description),
     );
-
+    current_info.update(db_conn).await?;
     Ok(())
 }
 
 pub async fn update_logo(path: &str, db_conn: &DbConn) -> AppResult {
     let mut current_info: ActiveWebsite = WebsiteEntity::find().one(db_conn).await?.unwrap().into();
     current_info.logo = Set(Some(path.to_owned()));
+    current_info.update(db_conn).await?;
     Ok(())
 }
 
 pub async fn update_favicon(path: &str, db_conn: &DbConn) -> AppResult {
     let mut current_info: ActiveWebsite = WebsiteEntity::find().one(db_conn).await?.unwrap().into();
     current_info.favicon = Set(Some(path.to_owned()));
+    current_info.update(db_conn).await?;
     Ok(())
 }
