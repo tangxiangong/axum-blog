@@ -8,3 +8,5 @@ mod upload;
 pub use upload::*;
 mod website;
 pub use website::*;
+mod category;
+pub use category::*;
