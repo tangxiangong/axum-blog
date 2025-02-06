@@ -15,16 +15,17 @@ pub struct Response {
 
 impl Response {
     pub fn content(&self) -> Option<String> {
-        self.choices.first().unwrap().message.content.clone()
+        match self.choices.first() {
+            Some(choice) => choice.message.content.clone(),
+            None => None,
+        }
     }
 
     pub fn reasoning_content(&self) -> Option<String> {
-        self.choices
-            .first()
-            .unwrap()
-            .message
-            .reasoning_content
-            .clone()
+        match self.choices.first() {
+            Some(choice) => choice.message.reasoning_content.clone(),
+            None => None,
+        }
     }
 
     pub fn completion_tokens(&self) -> usize {

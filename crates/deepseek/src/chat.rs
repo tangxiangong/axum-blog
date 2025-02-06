@@ -86,6 +86,11 @@ impl Chat {
         Ok(res)
     }
 
+    pub fn with_history(&mut self, history: &Vec<Message>) -> &mut Self {
+        self.messages = history.clone();
+        self
+    }
+
     pub async fn stream_prompt(&mut self, content: &str) -> Result<ByteStream, Error> {
         let message = Message::user(content);
         self.messages.push(message);
@@ -122,7 +127,20 @@ pub struct Message {
     name: Option<String>,
 }
 
+impl From<Response> for Message {
+    fn from(response: Response) -> Self {
+        match response.content() {
+            Some(content) => Message::assistant(content),
+            None => Message::assistant(""),
+        }
+    }
+}
+
 impl Message {
+    pub fn content(&self) -> &str {
+        &self.content
+    }
+
     pub fn new(content: impl Into<String>, role: Role, name: impl Into<String>) -> Self {
         Self {
             content: content.into(),
@@ -143,6 +161,14 @@ impl Message {
         Self {
             content: content.into(),
             role: Role::User,
+            name: None,
+        }
+    }
+
+    pub fn assistant(content: impl Into<String>) -> Self {
+        Self {
+            content: content.into(),
+            role: Role::Assistant,
             name: None,
         }
     }
