@@ -1,8 +1,18 @@
-app_port: 
+app_port: 3000
 db:
-  type: mysql
-  host: 
-  port: 
-  db_name: 
-  username: 
-  password: 
+  type: postgres
+  host: localhost
+  port: 5432
+  db_name: blog
+  username: postgres
+  password: postgres
+redis:
+  host: localhost
+  port: 6379
+site:
+  title: Blog with Axum
+  subtitle: ""
+  description: ""
+  admin:
+    name: admin
+    password: password
