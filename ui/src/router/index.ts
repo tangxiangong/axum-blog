@@ -44,6 +44,46 @@ const routes: RouteRecordRaw[] = [
         meta: {
           title: '个人资料'
         }
+      },
+      {
+        path: 'categories',
+        name: 'Categories',
+        component: () => import('@/views/admin/CategoryView.vue'),
+        meta: {
+          title: '分类管理'
+        }
+      },
+      {
+        path: 'tags',
+        name: 'Tags',
+        component: () => import('@/views/admin/TagView.vue'),
+        meta: {
+          title: '标签管理'
+        }
+      },
+      {
+        path: 'articles',
+        name: 'Articles',
+        component: () => import('@/views/admin/ArticleListView.vue'),
+        meta: {
+          title: '文章管理'
+        }
+      },
+      {
+        path: 'articles/create',
+        name: 'CreateArticle',
+        component: () => import('@/views/admin/ArticleEditView.vue'),
+        meta: {
+          title: '写文章'
+        }
+      },
+      {
+        path: 'articles/edit/:id',
+        name: 'EditArticle',
+        component: () => import('@/views/admin/ArticleEditView.vue'),
+        meta: {
+          title: '编辑文章'
+        }
       }
     ]
   },

@@ -1,12 +1,16 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { ElMessageBox, ElMessage } from 'element-plus'
 import { adminApi } from '@/api'
 import type { AdminInfo } from '@/api/types'
 
 const router = useRouter()
+const route = useRoute()
 const adminInfo = ref<AdminInfo>()
+
+// 计算当前激活的菜单项
+const activeMenu = computed(() => route.path)
 
 const getAdminInfo = async () => {
   try {
@@ -48,15 +52,38 @@ getAdminInfo()
         background-color="#1F2937"
         text-color="#fff"
         active-text-color="#409EFF"
+        :default-active="activeMenu"
+        router
       >
         <el-menu-item index="/admin/dashboard">
           <el-icon><DataLine /></el-icon>
           <span>仪表盘</span>
         </el-menu-item>
+        
+        <el-sub-menu index="/admin/content">
+          <template #title>
+            <el-icon><Document /></el-icon>
+            <span>内容管理</span>
+          </template>
+          <el-menu-item index="/admin/articles">
+            <el-icon><Reading /></el-icon>
+            <span>文章管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/categories">
+            <el-icon><Files /></el-icon>
+            <span>分类管理</span>
+          </el-menu-item>
+          <el-menu-item index="/admin/tags">
+            <el-icon><Discount /></el-icon>
+            <span>标签管理</span>
+          </el-menu-item>
+        </el-sub-menu>
+        
         <el-menu-item index="/admin/website">
           <el-icon><Setting /></el-icon>
           <span>网站设置</span>
         </el-menu-item>
+        
         <el-menu-item index="/admin/profile">
           <el-icon><User /></el-icon>
           <span>个人资料</span>

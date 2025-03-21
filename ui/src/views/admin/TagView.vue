@@ -1,36 +1,32 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FormInstance, FormRules } from 'element-plus'
+import { tagApi } from '@/api'
+import type { Tag } from '@/api/types'
 
-interface Tag {
-  id: number
-  name: string
-  postCount: number
-  createdAt: string
-}
-
-const tags = ref<Tag[]>([
-  {
-    id: 1,
-    name: 'Vue',
-    postCount: 8,
-    createdAt: '2024-03-10'
-  },
-  {
-    id: 2,
-    name: 'TypeScript',
-    postCount: 5,
-    createdAt: '2024-03-09'
-  }
-])
-
+const tags = ref<Tag[]>([])
+const loading = ref(false)
 const dialogVisible = ref(false)
 const formRef = ref<FormInstance>()
 const editingTag = ref<Tag | null>(null)
 const form = ref({
   name: ''
 })
+
+// 获取所有标签
+const fetchTags = async () => {
+  try {
+    loading.value = true
+    const { data } = await tagApi.getList()
+    tags.value = data
+  } catch (error) {
+    console.error('获取标签列表失败:', error)
+    ElMessage.error('获取标签列表失败')
+  } finally {
+    loading.value = false
+  }
+}
 
 const rules = ref<FormRules>({
   name: [
@@ -60,11 +56,19 @@ const handleDelete = async (id: number) => {
     await ElMessageBox.confirm('确定要删除这个标签吗？相关文章的标签将被移除', '提示', {
       type: 'warning'
     })
-    // TODO: 实现实际的删除API调用
-    tags.value = tags.value.filter(tag => tag.id !== id)
+    
+    loading.value = true
+    await tagApi.deleteById(id)
     ElMessage.success('删除成功')
-  } catch {
-    // 用户取消删除
+    await fetchTags() // 刷新列表
+  } catch (error) {
+    if (error instanceof Error) {
+      console.error('删除标签失败:', error)
+      ElMessage.error('删除失败')
+    }
+    // 用户取消删除的情况不显示错误
+  } finally {
+    loading.value = false
   }
 }
 
@@ -74,34 +78,33 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
   await formEl.validate(async (valid) => {
     if (valid) {
       try {
-        // TODO: 实现实际的API调用
+        loading.value = true
+        
         if (editingTag.value) {
-          // 更新
-          const index = tags.value.findIndex(tag => tag.id === editingTag.value?.id)
-          if (index !== -1) {
-            tags.value[index] = {
-              ...editingTag.value,
-              ...form.value
-            }
-          }
+          // 更新标签
+          await tagApi.update(editingTag.value.id, form.value.name)
           ElMessage.success('更新成功')
         } else {
-          // 新增
-          tags.value.push({
-            id: Date.now(),
-            name: form.value.name,
-            postCount: 0,
-            createdAt: new Date().toISOString().split('T')[0]
-          })
+          // 创建标签
+          await tagApi.create(form.value.name)
           ElMessage.success('创建成功')
         }
+        
         dialogVisible.value = false
+        await fetchTags() // 刷新列表
       } catch (error) {
+        console.error(editingTag.value ? '更新标签失败:' : '创建标签失败:', error)
         ElMessage.error(editingTag.value ? '更新失败' : '创建失败')
+      } finally {
+        loading.value = false
       }
     }
   })
 }
+
+onMounted(() => {
+  fetchTags()
+})
 </script>
 
 <template>
@@ -113,11 +116,12 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
       </el-button>
     </div>
 
-    <el-card>
+    <el-card v-loading="loading">
       <el-table :data="tags" style="width: 100%">
+        <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="名称" width="180" />
-        <el-table-column prop="postCount" label="文章数" width="100" align="center" />
-        <el-table-column prop="createdAt" label="创建时间" width="180" />
+        <el-table-column prop="created_at" label="创建时间" width="180" />
+        <el-table-column prop="updated_at" label="更新时间" width="180" />
         <el-table-column fixed="right" label="操作" width="150">
           <template #default="{ row }">
             <el-button
@@ -130,7 +134,6 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
             <el-button
               link
               type="danger"
-              :disabled="row.postCount > 0"
               @click="handleDelete(row.id)"
             >
               删除
