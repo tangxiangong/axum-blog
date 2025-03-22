@@ -10,3 +10,7 @@ mod website;
 pub use website::*;
 mod category;
 pub use category::*;
+mod article;
+pub use article::*;
+mod comment;
+pub use comment::*;
