@@ -50,10 +50,10 @@ const handleSubmit = async () => {
         
         const response = await adminApi.signIn(params)
         
-        // 检查是否有Bearer头部（当remember_me为true时服务器会返回）
-        const bearerToken = response.headers['bearer']
+        // 检查响应头中是否包含Bearer令牌
+        const bearerToken = response.headers?.bearer || response.headers?.Bearer
         if (bearerToken) {
-          localStorage.setItem('token', bearerToken)
+          console.log('登录成功，获取到令牌')
         }
         
         // 登录成功后跳转
@@ -61,9 +61,9 @@ const handleSubmit = async () => {
         router.push(redirectPath)
         
         ElMessage.success('登录成功')
-      } catch (error) {
+      } catch (error: any) {
         console.error('登录失败:', error)
-        ElMessage.error('登录失败，请检查用户名和密码')
+        ElMessage.error(error.response?.data?.message || '登录失败，请检查用户名和密码')
       } finally {
         loading.value = false
       }

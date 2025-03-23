@@ -1,7 +1,46 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import type { RouteRecordRaw } from 'vue-router'
+import { adminApi, JWT_TOKEN_KEY } from '@/api'
 
 const routes: RouteRecordRaw[] = [
+  {
+    path: '/',
+    component: () => import('@/layouts/BlogLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'Home',
+        component: () => import('@/views/HomeView.vue'),
+        meta: {
+          title: '博客首页'
+        }
+      },
+      {
+        path: 'categories',
+        name: 'BlogCategories',
+        component: () => import('@/views/HomeView.vue'), // 暂时使用HomeView，后续可以替换为实际的分类页面
+        meta: {
+          title: '分类'
+        }
+      },
+      {
+        path: 'tags',
+        name: 'BlogTags',
+        component: () => import('@/views/HomeView.vue'), // 暂时使用HomeView，后续可以替换为实际的标签页面
+        meta: {
+          title: '标签'
+        }
+      },
+      {
+        path: 'about',
+        name: 'About',
+        component: () => import('@/views/AboutView.vue'),
+        meta: {
+          title: '关于'
+        }
+      }
+    ]
+  },
   {
     path: '/login',
     name: 'Login',
@@ -89,7 +128,7 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/login'
+    redirect: '/'
   }
 ]
 
@@ -99,11 +138,12 @@ const router = createRouter({
 })
 
 // 路由守卫
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem('token')
+router.beforeEach(async (to, from, next) => {
+  // 检查用户是否已登录
+  const isAuthenticated = await isLoggedIn()
 
   if (to.matched.some(record => record.meta.requiresAuth)) {
-    if (!token) {
+    if (!isAuthenticated) {
       next({
         path: '/login',
         query: { redirect: to.fullPath }
@@ -112,12 +152,27 @@ router.beforeEach((to, from, next) => {
       next()
     }
   } else {
-    if (token && to.path === '/login') {
+    if (isAuthenticated && to.path === '/login') {
       next('/admin')
     } else {
       next()
     }
   }
 })
+
+// 检查用户是否已登录
+async function isLoggedIn() {
+  try {
+    // 尝试获取用户信息，如果成功说明用户已登录
+    // 确保使用的是正确的 API 调用方法
+    await adminApi.getInfo()
+    return true
+  } catch (error) {
+    // 如果请求失败，说明用户未登录或会话已过期
+    // 清除可能过期的 token
+    localStorage.removeItem(JWT_TOKEN_KEY)
+    return false
+  }
+}
 
 export default router

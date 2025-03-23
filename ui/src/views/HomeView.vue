@@ -2,7 +2,6 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import type { TabsPaneContext } from 'element-plus'
-import { HomeFilled, CollectionTag, Folder } from '@element-plus/icons-vue'
 import PostList from '@/components/PostList.vue'
 
 const router = useRouter()
@@ -42,16 +41,6 @@ const posts = ref([
   // ... 更多文章
 ])
 
-const navItems = [
-  { name: '首页', path: '/', icon: HomeFilled },
-  { name: '标签', path: '/tags', icon: CollectionTag },
-  { name: '分类', path: '/categories', icon: Folder },
-]
-
-const handleNav = (path: string) => {
-  router.push(path)
-}
-
 const activeTab = ref('latest')
 const handleTabChange = (tab: TabsPaneContext) => {
   console.log(tab)
@@ -60,6 +49,7 @@ const handleTabChange = (tab: TabsPaneContext) => {
 
 <template>
   <div class="home">
+    <h1 class="page-title">最新文章</h1>
     <PostList :posts="posts" />
   </div>
 </template>
@@ -67,10 +57,15 @@ const handleTabChange = (tab: TabsPaneContext) => {
 <style scoped>
 .home {
   width: 100%;
-  height: 100%;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
+}
+
+.page-title {
+  margin-bottom: 24px;
+  font-size: 24px;
+  color: #333;
 }
 
 /* 优化滚动条样式 */
@@ -89,18 +84,9 @@ const handleTabChange = (tab: TabsPaneContext) => {
 }
 
 /* 调整卡片样式 */
-.el-tabs :deep(.el-tabs__content) {
-  flex: 1;
-  overflow: hidden;
-}
-
 .el-card {
   margin-bottom: 1.5rem;
   --el-card-padding: 20px;
-}
-
-.el-tabs :deep(.el-tabs__header) {
-  margin-bottom: 24px;
 }
 
 .el-card :deep(.el-card__header) {
@@ -110,39 +96,5 @@ const handleTabChange = (tab: TabsPaneContext) => {
 
 .el-card :deep(.el-card__body) {
   padding: var(--el-card-padding);
-}
-
-/* 确保内容区域滚动 */
-.el-tabs :deep(.el-tab-pane) {
-  height: 100%;
-}
-
-.about-card {
-  height: auto !important;
-}
-
-.about-card :deep(.el-card__body) {
-  height: auto !important;
-  overflow: visible;
-}
-
-/* 导航菜单样式 */
-.nav-card :deep(.el-card__body) {
-  padding: 0.5rem 0;
-}
-
-/* 标签云卡片样式 */
-.tag-card :deep(.el-card__body) {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
-}
-
-/* 卡片间距控制 */
-.space-y-6 > * {
-  margin-bottom: 1.5rem;
-}
-
-.space-y-6 > *:last-child {
-  margin-bottom: 0;
 }
 </style>

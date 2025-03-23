@@ -13,9 +13,10 @@ const getAdminInfo = async () => {
     loading.value = true
     const { data } = await adminApi.getInfo()
     adminInfo.value = data
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取管理员信息失败:', error)
-    ElMessage.error('获取管理员信息失败')
+    const errorMessage = error.response?.data?.message || '获取管理员信息失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -31,9 +32,10 @@ const handleUpdate = async () => {
       nickname: adminInfo.value.nickname
     })
     ElMessage.success('更新成功')
-  } catch (error) {
+  } catch (error: any) {
     console.error('更新管理员信息失败:', error)
-    ElMessage.error('更新失败')
+    const errorMessage = error.response?.data?.message || '更新管理员信息失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -46,9 +48,10 @@ const handleAvatarUpload = async (file: File) => {
     await adminApi.updateAvatar(file)
     await getAdminInfo() // 刷新数据
     ElMessage.success('头像更新成功')
-  } catch (error) {
+  } catch (error: any) {
     console.error('上传头像失败:', error)
-    ElMessage.error('上传失败')
+    const errorMessage = error.response?.data?.message || '上传头像失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }

@@ -4,6 +4,8 @@ import { computed, onMounted, ref } from 'vue'
 
 const route = useRoute()
 const isLoginPage = computed(() => route.path === '/login')
+const isAdminPage = computed(() => route.path.startsWith('/admin'))
+const shouldShowSidebars = computed(() => !isLoginPage.value && !isAdminPage.value)
 const isDarkMode = ref(false)
 
 // 检查系统主题偏好
@@ -30,11 +32,11 @@ const applyTheme = () => {
   <div 
     class="app-container" 
     :class="{ 
-      'login-page': isLoginPage,
+      'login-page': isLoginPage || isAdminPage,
       'dark-mode': isDarkMode 
     }"
   >
-    <aside class="sidebar" v-if="!isLoginPage">
+    <aside class="sidebar" v-if="shouldShowSidebars">
       <div class="profile">
         <div class="avatar">
           <img src="https://api.dicebear.com/7.x/notionists/svg?seed=Felix" alt="头像">
@@ -73,10 +75,10 @@ const applyTheme = () => {
         </button>
       </div>
     </aside>
-    <main class="main-content" :class="{ 'full-width': isLoginPage }">
+    <main class="main-content" :class="{ 'full-width': isLoginPage || isAdminPage }">
       <RouterView />
     </main>
-    <aside class="right-sidebar" v-if="!isLoginPage">
+    <aside class="right-sidebar" v-if="shouldShowSidebars">
       <div class="widget">
         <div class="widget-title">
           <i class="fas fa-bullhorn"></i>

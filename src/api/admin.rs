@@ -8,14 +8,13 @@ use axum::{
 };
 
 pub fn public_routes() -> StateRouter {
-    Router::new()
-        .route("/signin", post(signin))
-        .route("/admin", get(info))
+    Router::new().route("/signin", post(signin))
 }
 
 pub fn protected_routes() -> StateRouter {
     Router::new()
         .route("/signout", post(signout))
+        .route("/admin", get(info))
         .route("/admin", patch(update_info))
         .route("/admin/upload", patch(update_avatar))
 }

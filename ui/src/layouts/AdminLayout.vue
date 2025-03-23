@@ -27,7 +27,6 @@ const handleLogout = async () => {
       type: 'warning'
     })
     await adminApi.signOut()
-    localStorage.removeItem('token')
     router.push('/login')
     ElMessage.success('已退出登录')
   } catch (error) {

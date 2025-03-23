@@ -68,9 +68,10 @@ const fetchArticle = async (id: number) => {
         articleForm[key] = article[key]
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取文章详情失败:', error)
-    ElMessage.error('获取文章详情失败')
+    const errorMessage = error.response?.data?.message || '获取文章详情失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -81,9 +82,10 @@ const fetchCategories = async () => {
   try {
     const response = await categoryApi.listCategories()
     categories.value = response.data.items || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取分类失败:', error)
-    ElMessage.error('获取分类列表失败')
+    const errorMessage = error.response?.data?.message || '获取分类列表失败'
+    ElMessage.error(errorMessage)
   }
 }
 
@@ -92,9 +94,10 @@ const fetchTags = async () => {
   try {
     const response = await tagApi.listTags()
     tags.value = response.data.items || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取标签失败:', error)
-    ElMessage.error('获取标签列表失败')
+    const errorMessage = error.response?.data?.message || '获取标签列表失败'
+    ElMessage.error(errorMessage)
   }
 }
 
@@ -124,9 +127,27 @@ const handleSave = async (publishNow = false) => {
         
         // 返回文章列表页
         router.push('/admin/articles')
-      } catch (error) {
+      } catch (error: any) {
         console.error('保存文章失败:', error)
-        ElMessage.error('保存文章失败')
+        // 显示详细错误信息
+        const errorMessage = error.response?.data?.message
+        
+        if (errorMessage) {
+          // 根据错误信息类型提供更友好的提示
+          if (errorMessage.includes('标题')) {
+            ElMessage.error(`文章标题错误: ${errorMessage}`)
+          } else if (errorMessage.includes('分类')) {
+            ElMessage.error(`分类错误: ${errorMessage}`)
+          } else if (errorMessage.includes('标签')) {
+            ElMessage.error(`标签错误: ${errorMessage}`)
+          } else if (errorMessage.includes('内容')) {
+            ElMessage.error(`文章内容错误: ${errorMessage}`)
+          } else {
+            ElMessage.error(errorMessage)
+          }
+        } else {
+          ElMessage.error('保存文章失败，请稍后重试')
+        }
       } finally {
         submitting.value = false
       }

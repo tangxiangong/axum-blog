@@ -16,23 +16,25 @@ import type {
     CreateArticleRequest,
     UpdateArticleRequest
 } from './types'
-import { adminApi } from './adminApi'
-import { articleApi } from './articleApi'
-import { categoryApi } from './categoryApi'
-import { tagApi } from './tagApi'
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000',
+    baseURL: import.meta.env.VITE_API_BASE_URL || '',
     withCredentials: true
 })
+
+// JWT 令牌的本地存储键名
+export const JWT_TOKEN_KEY = 'blog_admin_token'
 
 // 拦截器处理认证信息
 api.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token')
+        // 如果用户选择了"记住我"，尝试从localStorage获取JWT
+        const token = localStorage.getItem(JWT_TOKEN_KEY)
         if (token) {
-            config.headers.Authorization = `Bearer ${token}`
+            // 添加JWT到请求头的Authorization字段
+            config.headers['Authorization'] = `Bearer ${token}`
         }
+        // Cookie认证会自动处理（withCredentials: true）
         return config
     },
     (error) => {
@@ -40,19 +42,67 @@ api.interceptors.request.use(
     }
 )
 
+// 响应拦截器处理JWT令牌
+api.interceptors.response.use(
+    (response) => {
+        // 检查响应头中是否包含JWT令牌
+        const token = response.headers['authorization']
+        if (token && token.startsWith('Bearer ')) {
+            // 存储JWT令牌到localStorage
+            localStorage.setItem(JWT_TOKEN_KEY, token.substring(7))
+        }
+        return response
+    },
+    (error) => {
+        // 如果是401错误，清除可能过期的token
+        if (error.response && error.response.status === 401) {
+            localStorage.removeItem(JWT_TOKEN_KEY)
+        }
+        return Promise.reject(error)
+    }
+)
+
 // 管理员相关 API
 export const adminApi = {
-    signIn: (data: SignInRequest) =>
-        api.post<AdminInfo>('/signin', data),
+    signIn: (data: SignInRequest) => {
+        // 构建查询参数，确保 remember_me 作为 URL 参数传递
+        const params = new URLSearchParams(data as any)
+        const queryString = data.remember_me ? `?remember_me=true` : ''
 
-    signOut: () =>
-        api.post('/signout'),
+        return api.post<AdminInfo>(`/signin${queryString}`, params, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            transformResponse: [(data, headers) => {
+                // 从响应头中获取JWT令牌并保存
+                const bearerToken = headers?.bearer || headers?.Bearer
+                if (bearerToken) {
+                    localStorage.setItem(JWT_TOKEN_KEY, bearerToken)
+                }
+                return JSON.parse(data)
+            }]
+        })
+    },
+
+    signOut: () => {
+        // 清除本地存储的JWT令牌
+        localStorage.removeItem(JWT_TOKEN_KEY)
+        return api.post('/signout', null, {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        })
+    },
 
     getInfo: () =>
         api.get<AdminInfo>('/admin'),
 
     updateInfo: (data: UpdateAdminRequest) =>
-        api.patch<AdminInfo>('/admin', data),
+        api.patch<AdminInfo>('/admin', new URLSearchParams(data as any), {
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+        }),
 
     updateAvatar: (file: File) => {
         const formData = new FormData()
@@ -75,7 +125,6 @@ export const websiteApi = {
 
     updateLogo: (file: File) => {
         const formData = new FormData()
-        formData.append('file', file)
         return api.patch<WebsiteInfo>('/website/upload/logo', formData, {
             headers: {
                 'Content-Type': 'multipart/form-data'
@@ -169,11 +218,4 @@ export const articleApi = {
         api.patch<void>(`/article/unpublish?id=${id}`)
 }
 
-export default api
-
-export {
-    adminApi,
-    articleApi,
-    categoryApi,
-    tagApi
-} 
+export default api 

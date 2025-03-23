@@ -43,9 +43,10 @@ const fetchArticles = async () => {
     const response = await articleApi.listArticles(queryParams)
     articles.value = response.data.items || []
     total.value = response.data.total || 0
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取文章失败:', error)
-    ElMessage.error('获取文章列表失败')
+    const errorMessage = error.response?.data?.message || '获取文章列表失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -56,8 +57,10 @@ const fetchCategories = async () => {
   try {
     const response = await categoryApi.listCategories()
     categories.value = response.data.items || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取分类失败:', error)
+    const errorMessage = error.response?.data?.message || '获取分类列表失败'
+    ElMessage.error(errorMessage)
   }
 }
 
@@ -66,8 +69,10 @@ const fetchTags = async () => {
   try {
     const response = await tagApi.listTags()
     tags.value = response.data.items || []
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取标签失败:', error)
+    const errorMessage = error.response?.data?.message || '获取标签列表失败'
+    ElMessage.error(errorMessage)
   }
 }
 
@@ -131,7 +136,14 @@ const handleDelete = async (id: number) => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error('删除文章失败:', error)
-      ElMessage.error('删除文章失败')
+      
+      // 显示详细错误信息
+      const errorMessage = error.response?.data?.message
+      if (errorMessage) {
+        ElMessage.error(`删除失败: ${errorMessage}`)
+      } else {
+        ElMessage.error('删除文章失败，请稍后重试')
+      }
     }
   }
 }
@@ -155,7 +167,8 @@ const handleTogglePublish = async (row: ArticleListItem) => {
   } catch (error: any) {
     if (error !== 'cancel') {
       console.error(`${action}文章失败:`, error)
-      ElMessage.error(`${action}文章失败`)
+      const errorMessage = error.response?.data?.message || `${action}文章失败，请稍后重试`
+      ElMessage.error(errorMessage)
     }
   }
 }

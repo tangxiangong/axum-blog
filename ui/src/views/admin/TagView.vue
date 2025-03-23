@@ -20,9 +20,10 @@ const fetchTags = async () => {
     loading.value = true
     const { data } = await tagApi.getList()
     tags.value = data
-  } catch (error) {
+  } catch (error: any) {
     console.error('获取标签列表失败:', error)
-    ElMessage.error('获取标签列表失败')
+    const errorMessage = error.response?.data?.message || '获取标签列表失败'
+    ElMessage.error(errorMessage)
   } finally {
     loading.value = false
   }
@@ -61,10 +62,11 @@ const handleDelete = async (id: number) => {
     await tagApi.deleteById(id)
     ElMessage.success('删除成功')
     await fetchTags() // 刷新列表
-  } catch (error) {
-    if (error instanceof Error) {
+  } catch (error: any) {
+    if (error !== 'cancel') {
       console.error('删除标签失败:', error)
-      ElMessage.error('删除失败')
+      const errorMessage = error.response?.data?.message || '删除标签失败'
+      ElMessage.error(errorMessage)
     }
     // 用户取消删除的情况不显示错误
   } finally {
@@ -92,9 +94,11 @@ const handleSubmit = async (formEl: FormInstance | undefined) => {
         
         dialogVisible.value = false
         await fetchTags() // 刷新列表
-      } catch (error) {
+      } catch (error: any) {
         console.error(editingTag.value ? '更新标签失败:' : '创建标签失败:', error)
-        ElMessage.error(editingTag.value ? '更新失败' : '创建失败')
+        const action = editingTag.value ? '更新' : '创建'
+        const errorMessage = error.response?.data?.message || `${action}标签失败`
+        ElMessage.error(errorMessage)
       } finally {
         loading.value = false
       }

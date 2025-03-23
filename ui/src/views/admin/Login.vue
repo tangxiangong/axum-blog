@@ -24,21 +24,38 @@ const handleLogin = async () => {
   
   try {
     loading.value = true
-    const { data } = await adminApi.signIn(form.value)
-    ElMessage.success('登录成功')
-    // 存储token，假设后端返回的token在响应头中
-    const token = data.token
-    if (token) {
-      localStorage.setItem('token', token)
-      if (rememberMe.value) {
-        localStorage.setItem('username', form.value.username)
-      } else {
-        localStorage.removeItem('username')
-      }
+    const loginParams: SignInRequest = {
+      username: form.value.username,
+      password: form.value.password,
+      remember_me: rememberMe.value
     }
+    await adminApi.signIn(loginParams)
+    ElMessage.success('登录成功')
+    
+    // 存储用户名（如果勾选了记住我）
+    if (rememberMe.value) {
+      localStorage.setItem('username', form.value.username)
+    } else {
+      localStorage.removeItem('username')
+    }
+    
     router.push('/admin')
   } catch (error: any) {
-    ElMessage.error(error.response?.data?.message || '登录失败')
+    console.error('登录错误:', error)
+    
+    // 显示更具体的错误信息
+    const errorMessage = error.response?.data?.message
+    if (errorMessage) {
+      if (errorMessage.includes('密码错误')) {
+        ElMessage.error('密码错误，请重新输入')
+      } else if (errorMessage.includes('用户名')) {
+        ElMessage.error('用户名不存在或格式错误')
+      } else {
+        ElMessage.error(errorMessage)
+      }
+    } else {
+      ElMessage.error('登录失败，请稍后重试')
+    }
   } finally {
     loading.value = false
   }
