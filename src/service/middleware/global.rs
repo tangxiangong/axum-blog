@@ -1,5 +1,9 @@
 use crate::{AppState, service::middleware::timing};
-use axum::{Router, extract::DefaultBodyLimit, http::Method};
+use axum::{
+    Router,
+    extract::DefaultBodyLimit,
+    http::{Method, StatusCode},
+};
 use std::time::Duration;
 use tower_http::{
     cors::{Any, CorsLayer},
@@ -9,7 +13,10 @@ use tower_http::{
 
 pub fn global() -> Router<AppState> {
     Router::new()
-        .layer(TimeoutLayer::new(Duration::from_secs(10)))
+        .layer(TimeoutLayer::with_status_code(
+            StatusCode::REQUEST_TIMEOUT,
+            Duration::from_secs(10),
+        ))
         .layer(axum::middleware::from_fn(timing))
         // 限制请求体最大为 10 MB
         .layer(DefaultBodyLimit::max(1024 * 1024 * 10))
