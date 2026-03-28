@@ -1,28 +1,31 @@
-# axum-blog
-Axum + Vue3 + MySQL 搭建的个人博客网站
+# 我的个人网站
 
-## TODO
-- [x] Authorization: JWT + Session
-- [x] CORS + TIMEOUT
-- [x] `website` 相关功能
-- [x] `admin` 相关功能
-- [ ] `category` 相关功能
-  - [x] 添加
-  - [x] 更新
-  - [x] 删除
-  - [x] 查询
-    - [x] 根据父级ID查询
-    - [x] 根据名称查询
-  - [x] 列表
-  - [x] handler 层
-  - [ ] API 层
-- [ ] `article` 相关功能
-- [ ] `tag` 相关功能
-  - [x] 添加
-  - [x] 更新
-  - [x] 删除
-  - [x] 查询
-  - [x] 列表
-  - [ ] handler 层
-  - [ ] API 层
-- [ ] `comment` 相关功能
+## 技术栈
+
+- 后端：Rust + Axum
+- 数据库：SurrealDB
+- 缓存：Redis
+- 前端：SvelteKit + TailwindCSS（`/frontend`）
+
+## 本地启动
+
+1. 启动依赖服务：
+
+```bash
+docker compose up -d
+```
+
+2. 启动后端：
+
+```bash
+cargo run
+```
+
+默认配置文件为 `configration.yml`，后端会在启动时自动执行 SurrealDB schema 初始化，并在空库时初始化管理员与网站基础信息。
+
+3. 启动前端（可选）：
+
+```bash
+cd frontend
+bun run dev
+```
