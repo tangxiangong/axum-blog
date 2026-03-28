@@ -1,5 +1,5 @@
 use crate::{
-    AppError, AppResponse, AppResult, MySQLConn, RedisConn, RedisPoolConn,
+    AppError, AppResponse, AppResult, DbConn, RedisConn, RedisPoolConn,
     database::{
         admin::{get_password, get_uid},
         jwt::add,
@@ -18,7 +18,7 @@ use redis::AsyncCommands;
 /// 默认不会返回 JWT, 除非用户选择了`记住我`，对应于 `/login?remember_me=true`
 pub async fn signin(
     payload: RememberMe,
-    MySQLConn(db_conn): MySQLConn,
+    DbConn(db_conn): DbConn,
     RedisConn(redis_conn): RedisConn,
     admin: Login,
 ) -> impl IntoResponse {

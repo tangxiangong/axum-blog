@@ -1,7 +1,7 @@
 use crate::AppState;
 use crate::{Setting, SiteInit};
 use bb8_redis::RedisConnectionManager;
-use std::time::Duration;
+use surrealdb::{engine::any, opt::auth::Root};
 use tokio::net::TcpListener;
 
 fn load() -> Setting {
@@ -23,16 +23,6 @@ fn load() -> Setting {
 pub async fn get() -> (TcpListener, AppState, SiteInit) {
     let setting = load();
 
-    let db_url = format!(
-        "{}://{}:{}@{}:{}/{}",
-        setting.db.db_type,
-        setting.db.username,
-        setting.db.password,
-        setting.db.host,
-        setting.db.port,
-        setting.db.db_name
-    );
-
     let redis_url = format!("redis://{}:{}", setting.redis.host, setting.redis.port);
 
     let manager = RedisConnectionManager::new(redis_url).expect("Redis 连接失败");
@@ -42,17 +32,24 @@ pub async fn get() -> (TcpListener, AppState, SiteInit) {
         .await
         .expect("Redis 连接池创建失败");
 
-    let mut opt = sea_orm::ConnectOptions::new(&db_url);
-    opt.connect_timeout(Duration::from_secs(8))
-        .acquire_timeout(Duration::from_secs(8))
-        .sqlx_logging(false);
-
-    let db_conn = sea_orm::Database::connect(opt)
+    let db = any::connect(setting.db.endpoint.clone())
         .await
-        .expect("连接数据库失败");
+        .expect("连接 SurrealDB 失败");
+
+    db.signin(Root {
+        username: setting.db.username.clone(),
+        password: setting.db.password.clone(),
+    })
+    .await
+    .expect("SurrealDB 登录失败");
+
+    db.use_ns(setting.db.namespace.clone())
+        .use_db(setting.db.database.clone())
+        .await
+        .expect("SurrealDB namespace/database 选择失败");
 
     let app_state = AppState {
-        db_conn,
+        db,
         redis_pool: pool,
     };
 

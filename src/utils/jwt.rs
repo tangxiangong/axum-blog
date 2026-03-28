@@ -3,6 +3,10 @@ use std::sync::LazyLock;
 
 use crate::{AppError, AppResult, model::Claims};
 
+static JWT_CRYPTO_PROVIDER: LazyLock<()> = LazyLock::new(|| {
+    let _ = jsonwebtoken::crypto::rust_crypto::DEFAULT_PROVIDER.install_default();
+});
+
 static JWT_SECRET: LazyLock<Key> = LazyLock::new(|| {
     let secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
         r"^&SMCZHSnLwhSUvOh4L+LrTF*J&NALo53tAqh!_48xgg8R$xZ9PafoSJi(lun((g5ImAfc9yUWy~Yvog^Bvig*kZ64gq~"
@@ -28,11 +32,13 @@ impl Key {
 }
 
 pub fn encode_jwt(claims: &Claims) -> AppResult<String> {
+    let _ = &*JWT_CRYPTO_PROVIDER;
     encode(&Header::default(), claims, &JWT_SECRET.encode_key)
         .map_err(|e| AppError::internal(e.to_string()))
 }
 
 pub fn decode_jwt(token: &str) -> AppResult<Claims> {
+    let _ = &*JWT_CRYPTO_PROVIDER;
     let data = decode::<Claims>(
         token,
         &JWT_SECRET.decode_key,

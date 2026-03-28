@@ -61,8 +61,7 @@ impl_from_axum_error!(
 
 impl_into_internal_error!(
     std::io::Error,
-    sea_orm::error::DbErr,
-    sea_orm::error::SqlErr,
+    surrealdb::Error,
     serde_json::Error,
     redis::RedisError
 );

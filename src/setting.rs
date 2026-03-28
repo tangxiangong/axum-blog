@@ -37,11 +37,9 @@ impl Default for RedisSetting {
 
 #[derive(Deserialize, Clone)]
 pub struct DBSetting {
-    #[serde(rename = "type")]
-    pub db_type: String,
-    pub host: String,
-    pub port: u16,
-    pub db_name: String,
+    pub endpoint: String,
+    pub namespace: String,
+    pub database: String,
     pub username: String,
     pub password: String,
 }
@@ -49,10 +47,9 @@ pub struct DBSetting {
 impl Default for DBSetting {
     fn default() -> Self {
         DBSetting {
-            db_type: "mysql".to_string(),
-            host: "localhost".to_string(),
-            port: 3306,
-            db_name: "blog".to_string(),
+            endpoint: "ws://localhost:8000/rpc".to_string(),
+            namespace: "blog".to_string(),
+            database: "blog".to_string(),
             username: "root".to_string(),
             password: "password".to_string(),
         }

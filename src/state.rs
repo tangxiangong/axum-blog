@@ -5,21 +5,23 @@ use axum::{
 };
 use bb8::{Pool, PooledConnection};
 use bb8_redis::RedisConnectionManager;
-use sea_orm::DbConn;
+use surrealdb::{Surreal, engine::any::Any};
+
+pub type DatabaseClient = Surreal<Any>;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db_conn: DbConn,
+    pub db: DatabaseClient,
     pub redis_pool: Pool<RedisConnectionManager>,
 }
 
-pub struct MySQLConn(pub DbConn);
+pub struct DbConn(pub DatabaseClient);
 
 pub type RedisPoolConn = PooledConnection<'static, RedisConnectionManager>;
 
 pub struct RedisConn(pub PooledConnection<'static, RedisConnectionManager>);
 
-impl<S> FromRequestParts<S> for MySQLConn
+impl<S> FromRequestParts<S> for DbConn
 where
     S: Send + Sync,
     AppState: FromRef<S>,
@@ -27,7 +29,7 @@ where
     type Rejection = AppError;
     async fn from_request_parts(_parts: &mut Parts, state: &S) -> AppResult<Self> {
         let app_state = AppState::from_ref(state);
-        Ok(Self(app_state.db_conn.clone()))
+        Ok(Self(app_state.db.clone()))
     }
 }
 

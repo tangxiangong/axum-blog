@@ -1,5 +1,5 @@
-use sea_orm::prelude::*;
 use serde::{Deserialize, Serialize};
+use surrealdb::types::Datetime;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ArticleForm {
@@ -29,8 +29,8 @@ pub struct ArticleDetail {
     pub content: String,
     pub views: u32,
     pub publish: i8,
-    pub created_at: DateTimeLocal,
-    pub updated_at: DateTimeLocal,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
     pub categories: Vec<CategoryInfo>,
     pub tags: Vec<TagInfo>,
 }
@@ -42,8 +42,8 @@ pub struct ArticleInfo {
     pub summary: Option<String>,
     pub views: u32,
     pub publish: i8,
-    pub created_at: DateTimeLocal,
-    pub updated_at: DateTimeLocal,
+    pub created_at: Datetime,
+    pub updated_at: Datetime,
     pub categories: Vec<CategoryInfo>,
     pub tags: Vec<TagInfo>,
 }

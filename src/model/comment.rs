@@ -1,5 +1,5 @@
-use sea_orm::prelude::*;
 use serde::{Deserialize, Serialize};
+use surrealdb::types::Datetime;
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct CommentForm {
@@ -25,7 +25,7 @@ pub struct CommentInfo {
     pub email: Option<String>,
     pub content: String,
     pub parent_id: u32,
-    pub created_at: DateTimeLocal,
+    pub created_at: Datetime,
     pub children: Vec<CommentInfo>,
 }
 
@@ -37,6 +37,6 @@ pub struct CommentTree {
     pub email: Option<String>,
     pub content: String,
     pub parent_id: u32,
-    pub created_at: DateTimeLocal,
+    pub created_at: Datetime,
     pub children: Vec<CommentInfo>,
 }

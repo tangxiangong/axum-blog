@@ -1,36 +1,61 @@
-use crate::{
-    AppResult,
-    entity::{ActiveJwt, JwtEntity, jwt},
-    model::Claims,
-};
-use chrono::{Local, TimeZone};
-use sea_orm::{DbConn, QuerySelect, Set, prelude::*};
+use crate::{AppResult, DatabaseClient, database::common::next_id, model::Claims};
+use chrono::Local;
+use serde::Deserialize;
+use surrealdb::types::SurrealValue;
 
-pub async fn add(uid: &str, db_conn: &DbConn) -> AppResult<String> {
+#[derive(Debug, Deserialize, SurrealValue)]
+struct JwtTokenRow {
+    token: String,
+    expire_at: i64,
+}
+
+pub async fn add(uid: &str, db_conn: &DatabaseClient) -> AppResult<String> {
     let claims = Claims::new(uid);
     let token = claims.encode()?;
     let duration = claims.exp_secs();
-    let expire_at = Local.timestamp_opt(claims.exp as i64, 0).unwrap();
-    ActiveJwt {
-        token: Set(token.clone()),
-        user_uuid: Set(uid.to_string()),
-        expire_duration: Set(duration),
-        expire_at: Set(expire_at),
-        ..Default::default()
-    }
-    .insert(db_conn)
-    .await?;
+    let expire_at = claims.exp as i64;
+    let id = next_id("jwt", db_conn).await?;
+
+    db_conn
+        .query(
+            "CREATE type::thing('jwt', $rid) CONTENT {
+                id: $id,
+                user_uuid: $uid,
+                token: $token,
+                expire_duration: $duration,
+                expire_at: $expire_at,
+                created_at: time::now(),
+                updated_at: time::now()
+            };",
+        )
+        .bind(("rid", id))
+        .bind(("id", id))
+        .bind(("uid", uid.to_owned()))
+        .bind(("token", token.clone()))
+        .bind(("duration", duration))
+        .bind(("expire_at", expire_at))
+        .await?;
+
     Ok(token)
 }
 
-pub async fn find_by_uid(uid: &str, db_conn: &DbConn) -> AppResult<Vec<(String, i64)>> {
+pub async fn find_by_uid(uid: &str, db_conn: &DatabaseClient) -> AppResult<Vec<(String, i64)>> {
     let current = Local::now().timestamp();
-    Ok(JwtEntity::find()
-        .select_only()
-        .columns([jwt::Column::Token, jwt::Column::ExpireAt])
-        .filter(jwt::Column::UserUuid.eq(uid))
-        .filter(jwt::Column::ExpireAt.gt(current))
-        .into_tuple::<(String, i64)>()
-        .all(db_conn)
-        .await?)
+    let mut response = db_conn
+        .query(
+            "SELECT token, expire_at
+             FROM jwt
+             WHERE user_uuid = $uid
+               AND expire_at > $current
+             ORDER BY expire_at ASC;",
+        )
+        .bind(("uid", uid.to_owned()))
+        .bind(("current", current))
+        .await?;
+
+    let rows: Vec<JwtTokenRow> = response.take(0)?;
+    Ok(rows
+        .into_iter()
+        .map(|row| (row.token, row.expire_at))
+        .collect())
 }

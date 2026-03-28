@@ -6,7 +6,7 @@ async fn main() {
     dotenvy::dotenv().ok();
     let (listener, app_state, site_init) = get_setting().await;
 
-    init(site_init, &app_state.db_conn).await.unwrap();
+    init(site_init, &app_state.db).await.unwrap();
 
     tracing_subscriber::fmt::init();
 

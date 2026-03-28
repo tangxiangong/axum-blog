@@ -1,6 +1,6 @@
 use super::{signout, utils};
 use crate::{
-    AppResponse, AppResponseResult, AppResult, MySQLConn, RedisConn, RedisPoolConn,
+    AppResponse, AppResponseResult, AppResult, DbConn, RedisConn, RedisPoolConn,
     database::admin as db,
     database::jwt::find_by_uid,
     entity::Admin,
@@ -11,7 +11,7 @@ use chrono::Local;
 use redis::AsyncCommands;
 
 pub async fn info(
-    MySQLConn(db_conn): MySQLConn,
+    DbConn(db_conn): DbConn,
     Extension(uid): Extension<String>,
 ) -> AppResponseResult<Admin> {
     let admin = db::get_info(&uid, &db_conn).await?;
@@ -19,7 +19,7 @@ pub async fn info(
 }
 
 pub async fn update_info(
-    MySQLConn(db_conn): MySQLConn,
+    DbConn(db_conn): DbConn,
     Extension(uid): Extension<String>,
     info: UpdateAdminInfo,
 ) -> AppResult<()> {
@@ -28,7 +28,7 @@ pub async fn update_info(
 }
 
 pub async fn update_avatar(
-    MySQLConn(db_conn): MySQLConn,
+    DbConn(db_conn): DbConn,
     Extension(uid): Extension<String>,
     avatar: Image,
 ) -> AppResult<()> {
@@ -40,7 +40,7 @@ pub async fn update_avatar(
 /// 更新密码
 /// 将该用户的所有有效期内的 JWT 加入 Redis 黑名单
 pub async fn update_pwd(
-    MySQLConn(db_conn): MySQLConn,
+    DbConn(db_conn): DbConn,
     RedisConn(mut redis_conn): RedisConn,
     session: Extension<Option<Session>>,
     claims: Extension<Option<Claims>>,

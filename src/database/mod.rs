@@ -1,8 +1,9 @@
 pub mod admin;
-mod init;
-pub use init::init;
 pub mod category;
+mod common;
+mod init;
 pub mod jwt;
-mod macros;
 pub mod tag;
 pub mod website;
+
+pub use init::init;

@@ -1,0 +1,17 @@
+app_port: 3000
+db:
+  endpoint: ws://localhost:8000/rpc
+  namespace: blog
+  database: blog
+  username: root
+  password: password
+redis:
+  host: localhost
+  port: 6379
+site:
+  title: My Blog
+  subtitle: ""
+  description: ""
+  admin:
+    name: admin
+    password: password
