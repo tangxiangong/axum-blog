@@ -5,7 +5,7 @@
 - 后端：Rust + Axum
 - 数据库：SurrealDB
 - 缓存：Redis
-- 前端：SvelteKit + TailwindCSS（`/frontend`）
+- 前端：SolidJS + TailwindCSS（`/frontend`）
 
 ## 本地启动
 
