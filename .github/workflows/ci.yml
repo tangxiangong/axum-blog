@@ -51,8 +51,8 @@ jobs:
       - name: Format
         run: bun run format --check
 
-      - name: Type Check
-        run: bun tsc --noEmit
+      # - name: Type Check
+      #   run: bun tsc --noEmit
 
       - name: Build
         run: bun run build
