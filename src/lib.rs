@@ -1,20 +1,22 @@
+pub mod api;
+pub mod database;
+pub mod entity;
+pub mod macros;
+pub mod model;
+pub mod service;
+pub mod utils;
+
+mod error;
+pub use error::*;
+
 mod response;
 pub use response::*;
-mod error;
-pub mod macros;
-pub use error::*;
-pub mod entity;
-pub mod model;
+
 mod state;
 pub use state::*;
-pub mod utils;
 
 mod load;
 pub use load::*;
 
 mod setting;
 pub use setting::*;
-
-pub mod api;
-pub mod database;
-pub mod service;
