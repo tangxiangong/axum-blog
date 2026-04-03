@@ -3,7 +3,6 @@ use tracing::info;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().ok();
     let (listener, app_state, site_init) = get_setting().await;
 
     init(site_init, &app_state.db).await.unwrap();
