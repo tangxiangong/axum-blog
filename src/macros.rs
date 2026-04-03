@@ -1,4 +1,3 @@
-#[macro_export]
 macro_rules! impl_from_axum_error {
     ($($error:ty),+ $(,)?) => {
         $(
@@ -11,7 +10,6 @@ macro_rules! impl_from_axum_error {
     };
 }
 
-#[macro_export]
 macro_rules! impl_into_internal_error {
     ($($error:ty),+ $(,)?) => {
         $(
@@ -24,7 +22,6 @@ macro_rules! impl_into_internal_error {
     };
 }
 
-#[macro_export]
 macro_rules! impl_into_bad_request_error {
     ($($error:ty),+ $(,)?) => {
         $(
@@ -36,3 +33,7 @@ macro_rules! impl_into_bad_request_error {
         )+
     };
 }
+
+pub(crate) use impl_from_axum_error;
+pub(crate) use impl_into_bad_request_error;
+pub(crate) use impl_into_internal_error;

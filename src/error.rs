@@ -1,4 +1,7 @@
-use crate::{AppResponse, impl_from_axum_error, impl_into_internal_error};
+use crate::{
+    AppResponse,
+    macros::{impl_from_axum_error, impl_into_internal_error},
+};
 use axum::{
     http::{HeaderValue, StatusCode},
     response::{IntoResponse, Response},
