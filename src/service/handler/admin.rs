@@ -1,6 +1,6 @@
 use super::{signout, utils};
 use crate::{
-    AppResponse, AppResponseResult, AppResult, DbConn, RedisConn, RedisPoolConn,
+    AppResponse, AppResponseResult, AppResult, DbConn, RedisClient, RedisConn,
     database::admin as db,
     database::jwt::find_by_uid,
     entity::Admin,
@@ -53,7 +53,7 @@ pub async fn update_pwd(
     signout(RedisConn(redis_conn), claims, session).await
 }
 
-async fn jwt_blacklist(tokens: Vec<(String, i64)>, conn: &mut RedisPoolConn) -> AppResult {
+async fn jwt_blacklist(tokens: Vec<(String, i64)>, conn: &mut RedisClient) -> AppResult {
     let current_timestamp = Local::now().timestamp();
     for (ref token, exp_at) in tokens {
         if !conn.exists(token).await? {

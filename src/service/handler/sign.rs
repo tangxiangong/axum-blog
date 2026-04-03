@@ -1,5 +1,5 @@
 use crate::{
-    AppError, AppResponse, AppResult, DbConn, RedisConn, RedisPoolConn,
+    AppError, AppResponse, AppResult, DbConn, RedisClient, RedisConn,
     database::{
         admin::{get_password, get_uid},
         jwt::add,
@@ -81,7 +81,7 @@ pub async fn signout(
 async fn create_session(
     value: &str,
     // payload: Option<String>,
-    conn: RedisPoolConn,
+    conn: RedisClient,
 ) -> AppResult<String> {
     // let mut session = Session::with_payload(payload);
     let mut session = Session::default();

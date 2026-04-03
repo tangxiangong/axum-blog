@@ -11,8 +11,6 @@ name = "server"
 [dependencies]
 axum = { version = "0.8", features = ["form", "macros", "multipart"] }
 axum-extra = { version = "0.12", features = ["typed-header", "cookie"] }
-bb8 = "0.9"
-bb8-redis = "0.26"
 chrono = { version = "0.4", features = ["serde"] }
 config = { version = "0.15", features = ["yaml"] }
 dotenvy = "0.15"
@@ -26,6 +24,7 @@ redis = { version = "1.1", features = [
     "tls-rustls-insecure",
     "tokio-comp",
     "tokio-rustls-comp",
+    "connection-manager",
 ] }
 redis-macros = "1.0"
 regex = "1.12"

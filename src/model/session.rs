@@ -1,4 +1,4 @@
-use crate::{AppError, AppResult, AppState, RedisPoolConn};
+use crate::{AppError, AppResult, AppState, RedisClient};
 use axum::{
     RequestPartsExt,
     extract::{FromRef, OptionalFromRequestParts},
@@ -86,7 +86,7 @@ impl Session {
         }
     }
 
-    pub async fn update(&mut self, conn: RedisPoolConn) -> AppResult {
+    pub async fn update(&mut self, conn: RedisClient) -> AppResult {
         self.last_accessed = Local::now();
         self.save(conn).await?;
         Ok(())
@@ -100,7 +100,7 @@ impl Session {
         }
     }
 
-    pub async fn save(&self, mut conn: RedisPoolConn) -> AppResult {
+    pub async fn save(&self, mut conn: RedisClient) -> AppResult {
         let key = self.id();
         if conn.exists(key).await? {
             let _: () = conn.del(key).await?;
@@ -116,7 +116,7 @@ impl Session {
         Ok(())
     }
 
-    pub async fn load(id: &str, mut conn: RedisPoolConn) -> AppResult<Option<Self>> {
+    pub async fn load(id: &str, mut conn: RedisClient) -> AppResult<Option<Self>> {
         if conn.exists(id).await? {
             let session: Session = conn.get(id).await?;
             Ok(Some(session))
@@ -133,11 +133,7 @@ where
 {
     type Rejection = AppError;
     async fn from_request_parts(parts: &mut Parts, state: &S) -> AppResult<Option<Self>> {
-        let pool = AppState::from_ref(state).redis_pool.clone();
-        let conn = pool
-            .get_owned()
-            .await
-            .map_err(|e| AppError::internal(e.to_string()))?;
+        let conn = AppState::from_ref(state).redis.clone();
 
         match parts.extract::<Option<TypedHeader<Cookie>>>().await {
             Ok(Some(TypedHeader(cookies))) => match cookies.get("SESSION_ID") {

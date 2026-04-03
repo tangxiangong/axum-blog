@@ -1,6 +1,4 @@
-use crate::AppState;
-use crate::{Setting, SiteInit};
-use bb8_redis::RedisConnectionManager;
+use crate::{AppState, Setting, SiteInit};
 use surrealdb::{engine::any, opt::auth::Root};
 use tokio::net::TcpListener;
 
@@ -25,12 +23,11 @@ pub async fn get() -> (TcpListener, AppState, SiteInit) {
 
     let redis_url = format!("redis://{}:{}", setting.redis.host, setting.redis.port);
 
-    let manager = RedisConnectionManager::new(redis_url).expect("Redis 连接失败");
+    let redis_client = redis::Client::open(redis_url).expect("Redis 客户端创建失败");
 
-    let pool = bb8::Pool::builder()
-        .build(manager)
+    let redis = redis::aio::ConnectionManager::new(redis_client)
         .await
-        .expect("Redis 连接池创建失败");
+        .expect("Redis 连接失败");
 
     let db = any::connect(setting.db.endpoint.clone())
         .await
@@ -48,10 +45,7 @@ pub async fn get() -> (TcpListener, AppState, SiteInit) {
         .await
         .expect("SurrealDB namespace/database 选择失败");
 
-    let app_state = AppState {
-        db,
-        redis_pool: pool,
-    };
+    let app_state = AppState { db, redis };
 
     let listner = TcpListener::bind(format!("127.0.0.1:{}", setting.app_port))
         .await
